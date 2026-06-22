@@ -18,9 +18,54 @@ type FileFilterCallback = (error: Error | null, acceptFile: boolean) => void;
 const MIME_EXTENSION_MAP: Record<string, string> = {
   'image/gif': '.gif',
   'image/jpeg': '.jpg',
+  'image/jpg': '.jpg',
+  'image/jfif': '.jpg',
+  'image/jpe': '.jpg',
+  'image/pjpeg': '.jpg',
   'image/png': '.png',
   'image/webp': '.webp',
+  'image/avif': '.avif',
+  'image/bmp': '.bmp',
+  'image/tiff': '.tiff',
+  'image/tif': '.tif',
+  'image/svg+xml': '.svg',
+  'image/x-icon': '.ico',
+  'image/vnd.microsoft.icon': '.ico',
+  'image/heic': '.heic',
+  'image/heif': '.heif',
+  'image/jp2': '.jp2',
+  'image/jxr': '.jxr',
+  'image/jxl': '.jxl',
 };
+
+function resolveImageExtension(file: MulterFileLike) {
+  const mappedExtension = MIME_EXTENSION_MAP[file.mimetype];
+  if (mappedExtension) {
+    return mappedExtension;
+  }
+
+  const originalExtension = extname(file.originalname || '').toLowerCase();
+  if (originalExtension) {
+    return originalExtension;
+  }
+
+  if (!file.mimetype.startsWith('image/')) {
+    return '.bin';
+  }
+
+  const mimeSubtype = file.mimetype.slice('image/'.length).toLowerCase();
+  const normalizedSubtype = mimeSubtype.replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  if (!normalizedSubtype) {
+    return '.img';
+  }
+
+  if (normalizedSubtype === 'svg-xml') {
+    return '.svg';
+  }
+
+  return `.${normalizedSubtype}`;
+}
 
 function ensureProductUploadDir() {
   if (!existsSync(PRODUCT_UPLOAD_DIR)) {
@@ -48,7 +93,7 @@ export const productImageUploadOptions = {
     filename: (_req: unknown, file: MulterFileLike, callback: FilenameCallback) => {
       const originalName = file.originalname || 'producto';
       const cleanBaseName = sanitizeFileName(originalName.replace(/\.[^.]+$/, ''));
-      const extension = MIME_EXTENSION_MAP[file.mimetype] || extname(originalName).toLowerCase() || '.bin';
+      const extension = resolveImageExtension(file);
       const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1_000_000_000)}`;
 
       callback(null, `${uniqueSuffix}-${cleanBaseName}${extension}`);
@@ -58,12 +103,12 @@ export const productImageUploadOptions = {
     fileSize: MAX_IMAGE_SIZE_BYTES,
   },
   fileFilter: (_req: unknown, file: MulterFileLike, callback: FileFilterCallback) => {
-    if (MIME_EXTENSION_MAP[file.mimetype]) {
+    if (file.mimetype.startsWith('image/')) {
       callback(null, true);
       return;
     }
 
-    callback(new BadRequestException('Solo se permiten imagenes JPG, PNG, WEBP o GIF'), false);
+    callback(new BadRequestException('Solo se permiten archivos de imagen'), false);
   },
 };
 

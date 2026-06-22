@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 // Importación de Contextos y Componentes
 import { CartProvider } from './contexts/CartContext'; 
 import { useAuthContext } from './contexts/AuthContext'; 
@@ -46,7 +46,7 @@ function RoleRoute({ requiredRoles, element }) {
 
 function App() {
 	const { user, isAuthenticated } = useAuthContext();
-	const navigate = useNavigate();
+    const location = useLocation();
 
 	// Determina la ruta de inicio tras el login si no se especifica una
     const getHomeRoute = () => {
@@ -57,10 +57,12 @@ function App() {
         return user.id_rol === 3 ? "/catalogo" : "/usuarioC";
     };
 
+        const showHeader = isAuthenticated && user && location.pathname !== '/usuarioC';
+
 
 	return (
 		<CartProvider>
-			{isAuthenticated && user && <Header />}
+            {showHeader && <Header />}
 			<Routes>
 				
 				{/*RUTAS PÚBLICAS */}       // aqui se pone los roles donde se validaron a la bd donde en el backend cada componente lo valida

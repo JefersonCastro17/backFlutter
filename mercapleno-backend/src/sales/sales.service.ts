@@ -204,17 +204,29 @@ export class SalesService {
           [idVenta, idProducto, cantidad, producto.precio],
         );
 
+        // Paso 1: Registrar el movimiento de salida por venta
+        const [movimientoResult] = await connection.query(
+          `
+            INSERT INTO movimiento (id_tipo, descripcion, fecha_generar)
+            VALUES (?, ?, NOW())
+          `,
+          [MOVIMIENTO_VENTA_ID, `Salida por venta ID: ${idVenta}`],
+        );
+        const idMovimientoGenerado = (movimientoResult as any).insertId;
+
+        // Paso 2: Registrar en salida_productos usando el ID de movimiento generado
         await connection.query(
           `
             INSERT INTO salida_productos (id_productos, cantidad, fecha, id_documento, id_usuario, id_movimiento)
             VALUES (?, ?, NOW(), ?, ?, ?)
           `,
-          [idProducto, cantidad, DOCUMENTO_VENTA_ID, idUsuario, MOVIMIENTO_VENTA_ID],
+          [idProducto, cantidad, DOCUMENTO_VENTA_ID, idUsuario, idMovimientoGenerado],
         );
 
+        // Paso 3: Actualizar stock y asociar el id_movimiento en stock_actual
         await connection.query(
-          'UPDATE stock_actual SET stock = stock - ? WHERE id_productos = ?',
-          [cantidad, idProducto],
+          'UPDATE stock_actual SET stock = stock - ?, id_movimiento = ?, fecha_vencimiento = CURDATE() WHERE id_productos = ?',
+          [cantidad, idMovimientoGenerado, idProducto],
         );
 
         const remainingStock = Number(producto.stock) - cantidad;

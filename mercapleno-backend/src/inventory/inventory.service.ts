@@ -71,25 +71,38 @@ export class InventoryService {
       await connection.beginTransaction();
       await this.ensureReferenceDocumentExists(connection, dto.tipo_movimiento, normalizedDocumentId);
 
+      // Paso 1: Registrar el movimiento maestro
+      const descripcionMovimiento = dto.comentario || (dto.tipo_movimiento === 'ENTRADA' ? 'Entrada de producto por inventario' : 'Salida de producto por inventario');
+      const [movimientoResult] = await connection.execute(
+        `
+          INSERT INTO movimiento (id_tipo, descripcion, fecha_generar)
+          VALUES (?, ?, NOW())
+        `,
+        [id_mov_db, descripcionMovimiento],
+      );
+      const idMovimientoGenerado = (movimientoResult as any).insertId;
+
       if (dto.tipo_movimiento === 'ENTRADA') {
+        // Paso 2: Registrar en entrada_productos usando el ID dinámico
         await connection.execute(
           `
             INSERT INTO entrada_productos
             (id_productos, cantidad, fecha, observaciones, id_documento, id_usuario, id_movimiento)
             VALUES (?, ?, NOW(), ?, ?, ?, ?)
           `,
-          [dto.id_producto, dto.cantidad, dto.comentario || null, normalizedDocumentId, id_usuario, id_mov_db],
+          [dto.id_producto, dto.cantidad, dto.comentario || null, normalizedDocumentId, id_usuario, idMovimientoGenerado],
         );
 
+        // Paso 3: Actualizar stock_actual con la cantidad y el ID del movimiento
         const [updateResult] = await connection.execute(
-          'UPDATE stock_actual SET stock = stock + ? WHERE id_productos = ?',
-          [dto.cantidad, dto.id_producto],
+          'UPDATE stock_actual SET stock = stock + ?, id_movimiento = ?, fecha_vencimiento = CURDATE() WHERE id_productos = ?',
+          [dto.cantidad, idMovimientoGenerado, dto.id_producto],
         );
 
         if ((updateResult as { affectedRows?: number }).affectedRows === 0) {
           await connection.execute(
-            'INSERT INTO stock_actual (id_productos, stock) VALUES (?, ?)',
-            [dto.id_producto, dto.cantidad],
+            'INSERT INTO stock_actual (id_productos, stock, id_movimiento, fecha_vencimiento) VALUES (?, ?, ?, CURDATE())',
+            [dto.id_producto, dto.cantidad, idMovimientoGenerado],
           );
         }
       } else {
@@ -102,18 +115,20 @@ export class InventoryService {
           throw new BadRequestException({ error: 'Stock insuficiente para registrar salida' });
         }
 
+        // Paso 2: Registrar en salida_productos usando el ID dinámico
         await connection.execute(
           `
             INSERT INTO salida_productos
             (id_productos, cantidad, fecha, id_documento, id_usuario, id_movimiento)
             VALUES (?, ?, NOW(), ?, ?, ?)
           `,
-          [dto.id_producto, dto.cantidad, normalizedDocumentId, id_usuario, id_mov_db],
+          [dto.id_producto, dto.cantidad, normalizedDocumentId, id_usuario, idMovimientoGenerado],
         );
 
+        // Paso 3: Actualizar stock_actual con la cantidad y el ID del movimiento
         const [updateResult] = await connection.execute(
-          'UPDATE stock_actual SET stock = stock - ? WHERE id_productos = ?',
-          [dto.cantidad, dto.id_producto],
+          'UPDATE stock_actual SET stock = stock - ?, id_movimiento = ?, fecha_vencimiento = CURDATE() WHERE id_productos = ?',
+          [dto.cantidad, idMovimientoGenerado, dto.id_producto],
         );
 
         if ((updateResult as { affectedRows?: number }).affectedRows === 0) {
