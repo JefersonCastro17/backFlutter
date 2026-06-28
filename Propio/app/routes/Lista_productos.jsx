@@ -21,6 +21,7 @@ const EMPTY_CATALOGS = {
   proveedores: []
 };
 
+const DISABLED_PRODUCT_STATUS = "Deshabilitado";
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 
 function createProductFormState(producto = {}) {
@@ -228,6 +229,7 @@ function ProductModal({
                 <option value="Disponible">Disponible</option>
                 <option value="Agotado">Agotado</option>
               </select>
+              <small className="help-text">Disponible / Agotado</small>
             </div>
 
             <div className="products-modal__field products-modal__field--full">
@@ -308,7 +310,7 @@ function ProductRow({ producto, onEdit, onDelete }) {
       <td>{producto.categoria_nombre || producto.id_categoria}</td>
       <td>{producto.proveedor_nombre || producto.id_proveedor}</td>
       <td>
-        <span className={`products-status ${String(producto.estado).toLowerCase() === "agotado" ? "is-empty" : "is-ready"}`}>
+        <span className={`products-status ${String(producto.estado).toLowerCase() === "agotado" ? "is-empty" : String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" : "is-ready"}`}>
           {producto.estado}
         </span>
       </td>
@@ -318,7 +320,7 @@ function ProductRow({ producto, onEdit, onDelete }) {
             Editar
           </button>
           <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
-            Eliminar
+            Deshabilitar
           </button>
         </div>
       </td>
@@ -344,7 +346,11 @@ function ProductCard({ producto, onEdit, onDelete }) {
         <div className="products-card__heading">
           <p>ID {producto.id_productos}</p>
           <h3>{producto.nombre}</h3>
-          <span className={`products-status ${String(producto.estado).toLowerCase() === "agotado" ? "is-empty" : "is-ready"}`}>
+          <span className={`products-status ${
+          String(producto.estado).toLowerCase() === "agotado" ? "is-empty" :
+          String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" :
+          "is-ready"
+        }}`}>
             {producto.estado}
           </span>
         </div>
@@ -363,7 +369,7 @@ function ProductCard({ producto, onEdit, onDelete }) {
           Editar
         </button>
         <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
-          Eliminar
+          Desabilitar
         </button>
       </div>
     </article>
@@ -456,33 +462,43 @@ export default function Lista_productos() {
         String(producto.id_categoria || "").includes(normalizedSearch) ||
         String(producto.id_proveedor || "").includes(normalizedSearch);
 
-      const productStatus = String(producto.estado || "").toLowerCase();
+      const productStatus = String(producto.estado || "").trim().toLowerCase();
       const matchesStatus =
-        statusFilter === "todos" ||
-        (statusFilter === "disponible" && productStatus !== "agotado") ||
-        (statusFilter === "agotado" && productStatus === "agotado");
+    (statusFilter === "todos" && productStatus !== "deshabilitado") ||
+    (statusFilter === "disponible" && productStatus !== "agotado" && productStatus !== "deshabilitado") ||
+    (statusFilter === "agotado" && productStatus === "agotado") ||
+    (statusFilter === "deshabilitado" && productStatus === "deshabilitado");
 
       return matchesSearch && matchesStatus;
     });
   }, [productos, searchTerm, statusFilter]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm(`Eliminar producto ID ${id}?`)) return;
+    if (!window.confirm(`Deshabilitar producto. No se elimina, solo se oculta. ¿Continuar?`)) return;
 
     const idNumerico = parseInt(String(id).replace(/[^\d]/g, ""), 10);
     if (Number.isNaN(idNumerico)) {
-      alert("Error: ID de producto no valido para la eliminacion.");
+      alert("Error: ID de producto no valido para la deshabilitacion.");
       return;
     }
 
     try {
       await httpRequest(`${API_ENDPOINTS.products.crud}/${idNumerico}`, {
-        method: "DELETE",
+        method: "PUT",
+        data: { estado: DISABLED_PRODUCT_STATUS },
         auth: true,
         token
       });
-      setProductos((current) => current.filter((producto) => producto.id_productos !== id));
-      alert(`Producto ${id} eliminado.`);
+
+      setProductos((current) =>
+        current.map((producto) =>
+          producto.id_productos === idNumerico ? { ...producto, estado: DISABLED_PRODUCT_STATUS } : producto
+        )
+      );
+      // Refresh from server to ensure consistent state
+      await fetchProductos();
+
+      alert(`Producto ${id} deshabilitado correctamente.`);
     } catch (err) {
       if (handleAuthError(err)) return;
       alert(err.message || "Error de conexion.");
@@ -585,9 +601,9 @@ export default function Lista_productos() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
-              <option value="todos">Todos</option>
-              <option value="disponible">Disponibles</option>
-              <option value="agotado">Agotados</option>
+               <option value="todos">Todos</option>
+               <option value="disponible">Disponibles</option>
+               <option value="agotado">Agotados</option>
             </select>
           </div>
 
@@ -615,6 +631,9 @@ export default function Lista_productos() {
 
           {!loading && !error && filteredProducts.length > 0 ? (
             <>
+              <div className="products-warning">
+                <strong>Atencion:</strong> al deshabilitar un producto, este seguira registrado en el sistema pero se ocultara en otras tablas de venta e inventario. No se elimina, y si el producto tiene registros relacionados puede afectar la trazabilidad.
+              </div>
               <div className="products-table-wrap">
                 <table className="products-table">
                   <thead>
