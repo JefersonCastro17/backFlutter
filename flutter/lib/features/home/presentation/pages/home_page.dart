@@ -119,7 +119,7 @@ class _AdminDashboard extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 32,
-                            backgroundColor: Colors.white.withOpacity(0.2),
+                            backgroundColor: const Color.fromRGBO(255, 255, 255, 0.2),
                             child: Text(
                               name.isNotEmpty ? name[0].toUpperCase() : 'A',
                               style: const TextStyle(
@@ -167,7 +167,7 @@ class _AdminDashboard extends StatelessWidget {
                       Text(
                         'Panel de control administrativo de Mercapleno. Accede a las herramientas de catálogo y personal.',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
+                          color: const Color.fromRGBO(255, 255, 255, 0.85),
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -399,7 +399,7 @@ class _EmployeeDashboard extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 32,
-                            backgroundColor: Colors.white.withOpacity(0.2),
+                            backgroundColor: const Color.fromRGBO(255, 255, 255, 0.2),
                             child: Text(
                               name.isNotEmpty ? name[0].toUpperCase() : 'E',
                               style: const TextStyle(
@@ -447,7 +447,7 @@ class _EmployeeDashboard extends StatelessWidget {
                       Text(
                         'Panel de operación diaria de Mercapleno. Monitorea y controla los movimientos internos.',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
+                          color: const Color.fromRGBO(255, 255, 255, 0.85),
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -590,7 +590,7 @@ class _DashboardCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 6,
-      shadowColor: color.withOpacity(0.15),
+      shadowColor: color.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: InkWell(
         onTap: onTap,
@@ -604,7 +604,7 @@ class _DashboardCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 34),

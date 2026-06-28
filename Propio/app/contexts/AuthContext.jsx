@@ -41,6 +41,15 @@ const getInitialAuthState = () => {
         }
     }
 
+    // Si el usuario se almacenó en texto plano JSON, intentar parsearlo también.
+    if (!storedUser && storedEncryptedUser) {
+        try {
+            storedUser = JSON.parse(storedEncryptedUser);
+        } catch (_error) {
+            // No es JSON válido en texto plano.
+        }
+    }
+
     //CLAVE: La autenticación solo es válida si AMBOS están presentes y son válidos.
     if (storedUser && storedToken) {
         return { user: storedUser, token: storedToken };
@@ -63,14 +72,25 @@ export const AuthProvider = ({ children }) => {
     const token = authState.token;
     const isAuthenticated = !!user && !!token;
 
+    const normalizeUser = (userData) => {
+        if (!userData || typeof userData !== 'object') return userData;
+        return {
+            ...userData,
+            id_rol: userData.id_rol !== undefined ? Number(userData.id_rol) : userData.id_rol,
+        };
+    };
+
     // Función de LOGIN: Guarda los datos de la sesión y en localStorage (cifrados)
     const login = (userData, authToken) => {
+        const normalizedUser = normalizeUser(userData);
+        const normalizedToken = typeof authToken === 'string' ? authToken.trim() : authToken;
+
         // Guardar en el estado React
-        setAuthState({ user: userData, token: authToken });
+        setAuthState({ user: normalizedUser, token: normalizedToken });
         
         // Persistir en localStorage cifrados
-        const encryptedToken = encryptToken(authToken);
-        const encryptedUser = encryptData(userData);
+        const encryptedToken = encryptToken(normalizedToken);
+        const encryptedUser = encryptData(normalizedUser);
         
         if (encryptedToken && encryptedUser) {
             localStorage.setItem('token', encryptedToken);
@@ -78,8 +98,8 @@ export const AuthProvider = ({ children }) => {
             console.log('✓ Token y usuario cifrados en localStorage');
         } else {
             console.warn('⚠ No se pudieron cifrar los datos, guardando sin cifrar');
-            localStorage.setItem('user', JSON.stringify(userData));
-            localStorage.setItem('token', authToken);
+            localStorage.setItem('user', JSON.stringify(normalizedUser));
+            localStorage.setItem('token', normalizedToken);
         }
     };
 

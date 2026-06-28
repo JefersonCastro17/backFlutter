@@ -111,7 +111,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 textInputAction: TextInputAction.newline,
               ),
               DropdownButtonFormField<String>(
-                value: _estado,
+                initialValue: _estado,
                 decoration: const InputDecoration(labelText: 'Estado'),
                 items: const [
                   DropdownMenuItem(
@@ -124,7 +124,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                value: _idCategoria,
+                initialValue: _idCategoria,
                 decoration: const InputDecoration(labelText: 'Categoría'),
                 isExpanded: true,
                 items: ProductCatalogs.categorias.entries
@@ -138,7 +138,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                value: _idProveedor,
+                initialValue: _idProveedor,
                 decoration: const InputDecoration(labelText: 'Proveedor'),
                 isExpanded: true,
                 items: ProductCatalogs.proveedores.entries

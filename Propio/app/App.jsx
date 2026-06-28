@@ -25,22 +25,22 @@ import RegistroMovimientos from './routes/RegistroMovimientos'; // <-- AÑADIDO 
  *COMPONENTE AUXILIAR: RoleRoute (Se mantiene sin cambios)
  */
 function RoleRoute({ requiredRoles, element }) {
-    const { user } = useAuthContext();
-    
-    // Si no hay usuario o no está autenticado, no podemos determinar el rol
-    if (!user) {
-        // Asumiendo que el componente padre ya maneja la redirección a /login para rutas protegidas
-        return <Navigate to="/login" replace />; 
+    const { user, isAuthenticated } = useAuthContext();
+    const location = useLocation();
+
+    // Si no hay usuario o no está autenticado, redirigir al login con la ruta solicitada.
+    if (!isAuthenticated || !user) {
+        const redirectPath = encodeURIComponent(location.pathname + location.search);
+        return <Navigate to={`/login?redirect=${redirectPath}`} replace />;
     }
 
-    // Comprobar si el rol del usuario está en la lista de roles requeridos
-    if (requiredRoles.includes(user.id_rol)) {
-        return element; // Permitir acceso
+    const currentRole = Number(user.id_rol);
+    if (requiredRoles.includes(currentRole)) {
+        return element;
     }
 
-    // Redirigir si el rol no tiene permiso
-    console.warn(`Acceso denegado. Rol ${user.id_rol} intentó acceder a ruta restringida.`);
-    return <Navigate to="/unauthorized" replace />; 
+    console.warn(`Acceso denegado. Rol ${currentRole} intentó acceder a ruta restringida.`);
+    return <Navigate to="/unauthorized" replace />;
 }
 
 
@@ -50,11 +50,12 @@ function App() {
 
 	// Determina la ruta de inicio tras el login si no se especifica una
     const getHomeRoute = () => {
-        if (!user || !user.id_rol) {
+        if (!user || user.id_rol === undefined || user.id_rol === null) {
             return "/login"; 
         }
+        const roleId = Number(user.id_rol);
         // Rol 3 (Cliente) va a /catalogo. Roles 1 (Admin) y 2 (Empleado) van a /usuarioC (Dashboard de Operaciones)
-        return user.id_rol === 3 ? "/catalogo" : "/usuarioC";
+        return roleId === 3 ? "/catalogo" : "/usuarioC";
     };
 
         const showHeader = isAuthenticated && user && location.pathname !== '/usuarioC';

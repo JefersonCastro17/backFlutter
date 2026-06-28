@@ -604,6 +604,7 @@ export default function Lista_productos() {
                <option value="todos">Todos</option>
                <option value="disponible">Disponibles</option>
                <option value="agotado">Agotados</option>
+               <option value="deshabilitado">Deshabilitados</option>
             </select>
           </div>
 

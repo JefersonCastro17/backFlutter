@@ -52,7 +52,8 @@ function Login() {
       return;
     }
 
-    if (userData.id_rol === 1 || userData.id_rol === 2) {
+    const userRole = Number(userData.id_rol);
+    if (userRole === 1 || userRole === 2) {
       navigate("/usuarioC", { replace: true });
       return;
     }

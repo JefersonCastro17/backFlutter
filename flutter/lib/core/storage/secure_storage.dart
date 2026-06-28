@@ -72,7 +72,6 @@ class SecureStorage {
     await _storage.delete(key: _refreshKey);
   }
  
-  // LIMPIAR TODO (LOGOUT) 
   static Future<void> clearAll() async {
     await _storage.deleteAll();
   }

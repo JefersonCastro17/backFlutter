@@ -69,7 +69,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           const Text('Categoría', style: TextStyle(fontWeight: FontWeight.bold)),
           DropdownButtonFormField<String>(
-            value: _tempCategory,
+            initialValue: _tempCategory,
             items: _categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
             onChanged: (val) => setState(() => _tempCategory = val!),
             decoration: const InputDecoration(border: UnderlineInputBorder()),

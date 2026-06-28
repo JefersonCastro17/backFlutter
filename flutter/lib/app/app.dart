@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:mercapleno_appv1/core/theme/app_theme.dart';
-import 'package:mercapleno_appv1/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:mercapleno_appv1/features/auth/presentation/pages/auth_route_args.dart';
-import 'package:mercapleno_appv1/features/auth/presentation/pages/login_page.dart';
-import 'package:mercapleno_appv1/features/auth/presentation/pages/register_page.dart';
-import 'package:mercapleno_appv1/features/home/presentation/pages/home_page.dart';
-import 'package:mercapleno_appv1/features/home/presentation/pages/landing_page.dart';
-import 'package:mercapleno_appv1/features/venta/presentation/pages/carrito_page.dart';
-import 'package:mercapleno_appv1/features/users_admin/presentation/controllers/users_admin_controller.dart';
-import 'package:mercapleno_appv1/features/users_admin/presentation/pages/users_admin_list_page.dart';
-import 'package:mercapleno_appv1/features/users_admin/presentation/pages/user_form_page.dart';
+import '../core/theme/app_theme.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/auth/presentation/pages/auth_route_args.dart';
+import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/register_page.dart';
+import '../features/home/presentation/pages/home_page.dart';
+import '../features/home/presentation/pages/landing_page.dart';
+import '../features/venta/presentation/pages/carrito_page.dart';
+import '../features/users_admin/presentation/controllers/users_admin_controller.dart';
+import '../features/users_admin/presentation/pages/users_admin_list_page.dart';
+import '../features/users_admin/presentation/pages/user_form_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.authController});
@@ -26,15 +26,12 @@ class MyApp extends StatelessWidget {
       home: AnimatedBuilder(
         animation: authController,
         builder: (context, _) {
-          // La app raiz escucha el estado auth y decide que zona mostrar.
           if (authController.isInitializing) {
             return const _SplashPage();
           }
-
           if (authController.isAuthenticated) {
             return HomePage(controller: authController);
           }
-
           return LandingPage(controller: authController);
         },
       ),
@@ -64,8 +61,10 @@ class MyApp extends StatelessWidget {
           case UsersAdminListPage.routeName:
             return MaterialPageRoute(
               builder: (context) => UsersAdminListPage(
-                usersController: Provider.of<UsersAdminController>(context, listen: false),
-                authController: Provider.of<AuthController>(context, listen: false),
+                usersController:
+                    Provider.of<UsersAdminController>(context, listen: false),
+                authController:
+                    Provider.of<AuthController>(context, listen: false),
               ),
             );
           case UserFormPage.routeName:
@@ -96,7 +95,11 @@ class _SplashPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF0B4A8B), Color(0xFF123C63), Color(0xFFF4F7FB)],
+            colors: [
+              Color(0xFF0B4A8B),
+              Color(0xFF123C63),
+              Color(0xFFF4F7FB),
+            ],
           ),
         ),
         child: const Center(

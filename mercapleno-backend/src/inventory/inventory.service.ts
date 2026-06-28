@@ -33,6 +33,7 @@ export class InventoryService {
       FROM productos p
       LEFT JOIN categoria c ON p.id_categoria = c.id_categoria
       LEFT JOIN stock_actual s ON p.id_productos = s.id_productos
+      WHERE p.estado <> 'Deshabilitado'
       ORDER BY p.nombre ASC
     `;
 

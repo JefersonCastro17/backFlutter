@@ -26,7 +26,7 @@ const productMultipartSchema = {
     id_categoria: { type: 'integer' },
     id_proveedor: { type: 'integer' },
     descripcion: { type: 'string', nullable: true },
-    estado: { type: 'string', enum: ['Disponible', 'Agotado'] },
+    estado: { type: 'string', enum: ['Disponible', 'Agotado', 'Deshabilitado'] },
     imagen: { type: 'string', format: 'binary' },
   },
   required: ['nombre', 'precio', 'id_categoria', 'id_proveedor', 'estado'],

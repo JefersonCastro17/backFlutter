@@ -16,6 +16,7 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
   late final String _token;
   String _searchTerm = "";
   String _statusFilter = "todos";
+  static const _disabledStatus = 'Deshabilitado';
 
   @override
   void initState() {
@@ -36,14 +37,19 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
   }
 
   List<ProductEntity> get _filteredProducts {
+    final normalizedSearch = _searchTerm.trim().toLowerCase();
     return widget.controller.products.where((p) {
+      final productStatus = p.estado.toLowerCase();
       final matchesSearch =
-          _searchTerm.isEmpty ||
-          p.nombre.toLowerCase().contains(_searchTerm.toLowerCase()) ||
-          p.id.toString().contains(_searchTerm);
-      final matchesStatus =
-          _statusFilter == "todos" ||
-          p.estado.toLowerCase() == _statusFilter.toLowerCase();
+          normalizedSearch.isEmpty ||
+          p.id.toString().contains(normalizedSearch) ||
+          p.nombre.toLowerCase().contains(normalizedSearch) ||
+          (p.descripcion?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          p.idCategoria.toString().contains(normalizedSearch) ||
+          p.idProveedor.toString().contains(normalizedSearch);
+      final matchesStatus = _statusFilter == 'todos'
+          ? productStatus != _disabledStatus.toLowerCase()
+          : productStatus == _statusFilter.toLowerCase();
       return matchesSearch && matchesStatus;
     }).toList();
   }
@@ -116,6 +122,7 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
                       child: Text("Disponibles"),
                     ),
                     DropdownMenuItem(value: "Agotado", child: Text("Agotados")),
+                    DropdownMenuItem(value: "Deshabilitado", child: Text("Deshabilitados")),
                   ],
                   onChanged: (v) => setState(() => _statusFilter = v!),
                 ),
@@ -185,13 +192,13 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
                                       onPressed: () => _openForm(producto: p),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      icon: const Icon(Icons.block, color: Colors.orange),
                                       onPressed: () async {
                                         final confirm = await showDialog<bool>(
                                           context: context,
                                           builder: (context) => AlertDialog(
-                                            title: const Text('Eliminar Producto'),
-                                            content: Text('¿Estás seguro de que deseas eliminar "${p.nombre}"? Esta acción no se puede deshacer.'),
+                                            title: const Text('Deshabilitar Producto'),
+                                            content: Text('¿Estás seguro de que deseas deshabilitar "${p.nombre}"? El producto quedará oculto y no desaparecerá.'),
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.pop(context, false),
@@ -199,8 +206,8 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
                                               ),
                                               TextButton(
                                                 onPressed: () => Navigator.pop(context, true),
-                                                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                                child: const Text('Eliminar'),
+                                                style: TextButton.styleFrom(foregroundColor: Colors.orange),
+                                                child: const Text('Deshabilitar'),
                                               ),
                                             ],
                                           ),
@@ -208,11 +215,16 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
 
                                         if (confirm == true) {
                                           try {
-                                            await state.deleteProduct(p.id, _token);
+                                            await state.saveProduct(
+                                              token: _token,
+                                              id: p.id,
+                                              fields: {'estado': _disabledStatus},
+                                              imageFile: null,
+                                            );
                                             if (mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 SnackBar(
-                                                  content: Text('Producto "${p.nombre}" eliminado correctamente.'),
+                                                  content: Text('Producto "${p.nombre}" deshabilitado correctamente.'),
                                                   backgroundColor: Colors.green,
                                                 ),
                                               );
@@ -223,80 +235,12 @@ class _ListaProductosPageState extends State<ListaProductosPage> {
                                               if (errorMsg.startsWith('Exception: ')) {
                                                 errorMsg = errorMsg.substring(11);
                                               }
-
-                                              final isForeignKeyError = errorMsg.contains('asociado a ventas') || 
-                                                  errorMsg.contains('clave foránea') || 
-                                                  errorMsg.contains('Foreign key');
-
-                                              if (isForeignKeyError) {
-                                                final deactivate = await showDialog<bool>(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: const Text('Inhabilitar Producto'),
-                                                    content: const Text(
-                                                      'Este producto tiene ventas asociadas y no se puede borrar de forma permanente.\n\n'
-                                                      '¿Deseas inhabilitarlo cambiando su estado a "Agotado"?'
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context, false),
-                                                        child: const Text('Cancelar'),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context, true),
-                                                        style: TextButton.styleFrom(foregroundColor: Colors.orange),
-                                                        child: const Text('Inhabilitar'),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-
-                                                if (deactivate == true) {
-                                                  try {
-                                                    await state.saveProduct(
-                                                      token: _token,
-                                                      id: p.id,
-                                                      fields: {
-                                                        'nombre': p.nombre,
-                                                        'precio': p.precio.toString(),
-                                                        'estado': 'Agotado',
-                                                        'descripcion': p.descripcion ?? '',
-                                                        'id_categoria': p.idCategoria.toString(),
-                                                        'id_proveedor': p.idProveedor.toString(),
-                                                      },
-                                                    );
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text('Producto inhabilitado correctamente.'),
-                                                          backgroundColor: Colors.orange,
-                                                        ),
-                                                      );
-                                                    }
-                                                  } catch (saveError) {
-                                                    if (mounted) {
-                                                      String saveErrMsg = saveError.toString();
-                                                      if (saveErrMsg.startsWith('Exception: ')) {
-                                                        saveErrMsg = saveErrMsg.substring(11);
-                                                      }
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text('Error al inhabilitar producto: $saveErrMsg'),
-                                                          backgroundColor: Colors.red,
-                                                        ),
-                                                      );
-                                                    }
-                                                  }
-                                                }
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(errorMsg),
-                                                    backgroundColor: Colors.red,
-                                                    duration: const Duration(seconds: 6),
-                                                  ),
-                                                );
-                                              }
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Error al deshabilitar producto: $errorMsg'),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
                                             }
                                           }
                                         }

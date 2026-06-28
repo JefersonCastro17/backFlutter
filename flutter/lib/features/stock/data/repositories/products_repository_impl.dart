@@ -15,7 +15,22 @@ class ProductsRepositoryImpl implements ProductsRepository {
   @override
   Future<List<Product>> getAllProducts() async {
     final raw = await _remote.fetchProducts();
-    return raw.map((m) => ProductModel.fromJson(m)).toList(growable: false);
+    final products = raw.map((m) => ProductModel.fromJson(m)).toList(growable: false);
+
+    const excludedProductIds = {'1', '2'};
+    const excludedProductNames = {
+      'wous',
+      'leche alquería 1l',
+      'leche alqueria 1l',
+    };
+
+    return products
+        .where((product) {
+          final name = product.name.toLowerCase().trim();
+          return !excludedProductIds.contains(product.id) &&
+              !excludedProductNames.contains(name);
+        })
+        .toList(growable: false);
   }
 
   @override

@@ -133,14 +133,14 @@ class _ResumenPagoSectionState extends State<_ResumenPagoSection> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, spreadRadius: 5)],
+        boxShadow: [const BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.05), blurRadius: 10, spreadRadius: 5)],
       ),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              value: widget.ventaProvider.selectedPaymentMethod,
+              initialValue: widget.ventaProvider.selectedPaymentMethod,
               decoration: const InputDecoration(
                 labelText: 'Método de Pago',
                 border: OutlineInputBorder(),

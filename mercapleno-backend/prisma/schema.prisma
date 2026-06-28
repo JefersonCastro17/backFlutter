@@ -214,4 +214,5 @@ model venta_productos {
 enum productos_estado {
   Disponible
   Agotado
+  Deshabilitado
 }

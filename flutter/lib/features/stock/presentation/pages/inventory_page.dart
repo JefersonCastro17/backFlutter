@@ -281,12 +281,12 @@ class _InventoryPageState extends State<InventoryPage> {
 
     return Card(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.04),
+      shadowColor: const Color.fromRGBO(0, 0, 0, 0.04),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: stock <= threshold
-              ? style.fg.withOpacity(0.4)
+              ? style.fg.withValues(alpha: 0.4)
               : const Color(0xFFDCE6F1),
           width: stock <= threshold ? 1.5 : 1,
         ),
@@ -473,7 +473,7 @@ class _FilterChipRow extends StatelessWidget {
               onSelected: (ok) {
                 if (ok) onSelected(f);
               },
-              selectedColor: const Color(0xFF0B4A8B).withOpacity(0.15),
+              selectedColor: const Color.fromARGB(38, 11, 74, 139),
               labelStyle: TextStyle(
                 color: isSelected
                     ? const Color(0xFF0B4A8B)
@@ -818,7 +818,7 @@ class _MovementFormState extends State<_MovementForm> {
               children: [
                 // Tipo de movimiento
                 DropdownButtonFormField<String>(
-                  value: _movementType,
+                  initialValue: _movementType,
                   items: const [
                     DropdownMenuItem(
                       value: 'ENTRADA',
@@ -847,7 +847,7 @@ class _MovementFormState extends State<_MovementForm> {
 
                 // Selector de producto
                 DropdownButtonFormField<String>(
-                  value: _selectedProductId,
+                  initialValue: _selectedProductId,
                   items: products
                       .map((p) =>
                           DropdownMenuItem(value: p.id, child: Text(p.name)))
@@ -927,7 +927,7 @@ class _MovementFormState extends State<_MovementForm> {
                   )
                 else if (_documentOptions.isNotEmpty)
                   DropdownButtonFormField<String>(
-                    value: _selectedDocumentId,
+                    initialValue: _selectedDocumentId,
                     items: [
                       const DropdownMenuItem(
                         value: null,

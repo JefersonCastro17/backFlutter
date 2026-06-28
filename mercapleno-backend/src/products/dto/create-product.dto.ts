@@ -24,9 +24,9 @@ export class CreateProductDto {
   @IsString()
   descripcion?: string;
 
-  @ApiProperty({ default: 'Disponible', enum: ['Disponible', 'Agotado'] })
+  @ApiProperty({ default: 'Disponible', enum: ['Disponible', 'Agotado', 'Deshabilitado'] })
   @IsString()
-  @IsIn(['Disponible', 'Agotado'])
+  @IsIn(['Disponible', 'Agotado', 'Deshabilitado'])
   estado: string;
 
   @ApiProperty({ required: false })

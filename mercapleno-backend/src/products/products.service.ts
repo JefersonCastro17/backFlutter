@@ -181,9 +181,19 @@ export class ProductsService {
       throw new NotFoundException({ message: 'Producto no encontrado' });
     }
 
-    await this.prisma.productos.delete({
-      where: { id_productos: id },
-    });
+    try {
+      await this.prisma.productos.delete({
+        where: { id_productos: id },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException({
+          message:
+            'No se puede eliminar el producto porque existen registros relacionados en stock, ventas o movimientos.',
+        });
+      }
+      throw new InternalServerErrorException({ message: 'No se pudo eliminar el producto' });
+    }
 
     deleteStoredProductImage(existing.imagen);
 
@@ -204,6 +214,7 @@ export class ProductsService {
 
     if (normalized === 'disponible') return productos_estado.Disponible;
     if (normalized === 'agotado') return productos_estado.Agotado;
+    if (normalized === 'deshabilitado') return productos_estado.Deshabilitado;
 
     throw new BadRequestException('Estado de producto invalido');
   }
