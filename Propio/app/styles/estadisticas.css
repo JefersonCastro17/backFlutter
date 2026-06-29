@@ -4,9 +4,9 @@
   --ink: #0f172a;
   --slate: #475569;
   --muted: #94a3b8;
-  --brand: #0ea5e9;
-  --brand-deep: #0284c7;
-  --accent: #f59e0b;
+  --brand: var(--color-principal);
+  --brand-deep: var(--color-principal-dark);
+  --accent: var(--color-acento);
   --success: #22c55e;
   --danger: #ef4444;
   --card: rgba(255, 255, 255, 0.92);

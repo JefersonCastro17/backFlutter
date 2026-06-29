@@ -545,6 +545,7 @@ class _LoginPageState extends State<LoginPage> {
       email: _resetEmailController.text.trim(),
       code: _resetCodeController.text.trim(),
       newPassword: _resetPasswordController.text,
+      confirmPassword: _resetConfirmPasswordController.text,
     );
   }
 

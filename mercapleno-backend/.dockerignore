@@ -4,3 +4,5 @@ dist
 .env
 .env.docker
 npm-debug.log
+tsconfig*.tsbuildinfo
+.tmp-local-backend*.log

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:mercapleno_appv1/core/config/app_config.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/reportes_entities.dart';
 import '../../domain/usecases/obtener_reportes_usecase.dart';
@@ -159,6 +160,20 @@ class ReportesController extends ChangeNotifier {
     final bytes = await pdf.save();
     final fileName = 'reporte_ventas_local_${DateTime.now().millisecondsSinceEpoch}';
     return await _savePdf(fileName, bytes);
+  }
+
+  Future<void> compartirPdf(String token) async {
+    final path = await descargarPdf(token);
+    if (path == null) {
+      throw Exception('SHARE_PDF_FAILED');
+    }
+
+    await SharePlus.instance.share(
+      ShareParams(
+        text: 'Reporte de Ventas - Mercapleno',
+        files: [XFile(path)],
+      ),
+    );
   }
 
   void limpiarFiltros(String token, VoidCallback onAuthExpired) {

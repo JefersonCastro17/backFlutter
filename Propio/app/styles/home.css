@@ -1,6 +1,8 @@
 .home-shell {
-  --home-primary: var(--color-principal, #0066cc);
-  --home-accent: var(--color-acento, #f9b300);
+  --home-primary: var(--color-principal, #0B4A8B);
+  --home-primary-dark: var(--color-principal-dark, #123C63);
+  --home-accent: var(--color-acento, #F59E0B);
+  --home-accent-dark: var(--color-acento-dark, #D97706);
   --home-bg: #f5f7fa;
   --home-surface: #ffffff;
   --home-border: #d9e2ec;
@@ -10,9 +12,7 @@
   min-height: 100vh;
   padding: 24px;
   background:
-    linear-gradient(180deg, rgba(0, 102, 204, 0.06) 0%, rgba(245, 247, 250, 0) 220px),
-    var(--home-bg);
-  color: var(--home-text);
+    linear-gradient(180deg, rgba(11, 74, 139, 0.06) 0%, rgba(245, 247, 250, 0) 220px),
 }
 
 .home-topbar,
@@ -108,7 +108,7 @@
 }
 
 .home-btn--primary:hover {
-  background: #0055aa;
+  background: var(--color-principal-dark);
 }
 
 .home-btn--ghost {
@@ -118,8 +118,8 @@
 }
 
 .home-btn--ghost:hover {
-  border-color: rgba(0, 102, 204, 0.35);
-  background: rgba(0, 102, 204, 0.04);
+  border-color: rgba(11, 74, 139, 0.35);
+  background: rgba(11, 74, 139, 0.04);
 }
 
 .home-hero {
@@ -152,7 +152,7 @@
   min-height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(0, 102, 204, 0.08);
+  background: rgba(11, 74, 139, 0.08);
   color: var(--home-primary);
   font-size: 0.78rem;
   font-weight: 700;
@@ -262,8 +262,8 @@
   min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(249, 179, 0, 0.16);
-  color: #8a6500;
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--home-accent-dark);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -285,9 +285,9 @@
   padding: 22px;
   border-radius: 20px;
   background:
-    radial-gradient(circle at top right, rgba(249, 179, 0, 0.24), transparent 34%),
-    linear-gradient(135deg, rgba(0, 102, 204, 0.08), rgba(255, 255, 255, 0.96));
-  border: 1px solid rgba(0, 102, 204, 0.12);
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.24), transparent 34%),
+    linear-gradient(135deg, rgba(11, 74, 139, 0.08), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(11, 74, 139, 0.12);
 }
 
 .home-featured__list {
@@ -374,11 +374,11 @@
 }
 
 .home-role-card--admin::before {
-  background: linear-gradient(180deg, #0a78e3, #004f9e);
+  background: linear-gradient(180deg, var(--home-primary), var(--home-primary-dark));
 }
 
 .home-role-card--employee::before {
-  background: linear-gradient(180deg, #f59e0b, #d97706);
+  background: linear-gradient(180deg, var(--home-accent), var(--home-accent-dark));
 }
 
 .home-role-card--client::before {

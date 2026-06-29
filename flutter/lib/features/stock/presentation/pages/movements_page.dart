@@ -207,7 +207,7 @@ class _MovementTile extends StatelessWidget {
                   product.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E3A5F),
+                    color: Color(0xFF123C63),
                   ),
                 ),
                 if ((product.sku ?? '').isNotEmpty)

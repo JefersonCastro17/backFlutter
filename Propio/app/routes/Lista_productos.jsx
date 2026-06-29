@@ -228,8 +228,9 @@ function ProductModal({
               <select name="estado" value={formData.estado} onChange={handleChange} required>
                 <option value="Disponible">Disponible</option>
                 <option value="Agotado">Agotado</option>
+                <option value="Deshabilitado">Deshabilitado</option>
               </select>
-              <small className="help-text">Disponible / Agotado</small>
+              <small className="help-text">Disponible / Agotado / Deshabilitado</small>
             </div>
 
             <div className="products-modal__field products-modal__field--full">
@@ -464,10 +465,15 @@ export default function Lista_productos() {
 
       const productStatus = String(producto.estado || "").trim().toLowerCase();
       const matchesStatus =
-    (statusFilter === "todos" && productStatus !== "deshabilitado") ||
-    (statusFilter === "disponible" && productStatus !== "agotado" && productStatus !== "deshabilitado") ||
-    (statusFilter === "agotado" && productStatus === "agotado") ||
-    (statusFilter === "deshabilitado" && productStatus === "deshabilitado");
+        statusFilter === "todos"
+          ? true
+          : statusFilter === "disponible"
+          ? productStatus === "disponible"
+          : statusFilter === "agotado"
+          ? productStatus === "agotado"
+          : statusFilter === "deshabilitado"
+          ? productStatus === "deshabilitado"
+          : true;
 
       return matchesSearch && matchesStatus;
     });
@@ -483,9 +489,14 @@ export default function Lista_productos() {
     }
 
     try {
+      // Send a JSON body when only updating the `estado` field.
+      // Using JSON avoids multipart boundaries for a simple update
+      // and is supported by the backend controller.
+      const payload = { estado: DISABLED_PRODUCT_STATUS };
+
       await httpRequest(`${API_ENDPOINTS.products.crud}/${idNumerico}`, {
         method: "PUT",
-        data: { estado: DISABLED_PRODUCT_STATUS },
+        data: payload,
         auth: true,
         token
       });

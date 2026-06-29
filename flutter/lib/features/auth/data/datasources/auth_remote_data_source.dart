@@ -77,6 +77,7 @@ class AuthRemoteDataSource {
     required String email,
     required String code,
     required String newPassword,
+    required String confirmPassword,
   }) {
     return _apiClient.post(
       AppConfig.resetPasswordEndpoint,
@@ -84,6 +85,7 @@ class AuthRemoteDataSource {
         'email': email,
         'code': code,
         'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
       },
     );
   }

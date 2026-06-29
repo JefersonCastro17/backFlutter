@@ -104,7 +104,7 @@ class _AdminDashboard extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF0B4A8B), Color(0xFF1E3A5F)],
+                      colors: [Color(0xFF0B4A8B), Color(0xFF123C63)],
                     ),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(32),
@@ -384,7 +384,7 @@ class _EmployeeDashboard extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF0B4A8B), Color(0xFF1E3A5F)],
+                      colors: [Color(0xFF0B4A8B), Color(0xFF123C63)],
                     ),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(32),
@@ -620,7 +620,7 @@ class _DashboardCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E3A5F),
+                        color: Color(0xFF123C63),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

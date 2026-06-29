@@ -61,21 +61,58 @@ class _CatalogoPageState extends State<CatalogoPage> {
       ),
       body: ventaProvider.isLoading 
         ? const Center(child: CircularProgressIndicator())
-        : GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: ventaProvider.productos.length,
-            itemBuilder: (context, index) {
-              final producto = ventaProvider.productos[index];
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  children: [
+        : ventaProvider.productos.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.search_off, size: 80, color: Colors.grey),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'No se encontraron productos con esos filtros.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Prueba otra categoría, amplía el rango de precio o limpia la búsqueda.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      OutlinedButton(
+                        onPressed: () {
+                          ventaProvider.updateFilters(
+                            search: '',
+                            category: 'Todo',
+                            min: null,
+                            max: null,
+                          );
+                        },
+                        child: const Text('Mostrar todo'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: ventaProvider.productos.length,
+                itemBuilder: (context, index) {
+                  final producto = ventaProvider.productos[index];
+                  return Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     Expanded(
                       child: Image.network(
                         producto.urlImagenCompleta, // Usando la lógica de imageUtils
@@ -98,7 +135,41 @@ class _CatalogoPageState extends State<CatalogoPage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                producto.categoria,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue[800]),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Text(
+                              'Disponible',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.green),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

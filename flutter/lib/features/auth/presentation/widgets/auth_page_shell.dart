@@ -37,8 +37,8 @@ class AuthPageShell extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF0A4D92),
-                Color(0xFF0D2E4D),
+                Color(0xFF0B4A8B),
+                Color(0xFF123C63),
                 Color(0xFFF4F7FB),
               ],
               stops: [0, 0.35, 1],
@@ -193,11 +193,11 @@ class _BrandHeader extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF4A300), Color(0xFFF97316)],
+              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x3DF4A300),
+                color: Color(0x3DF59E0B),
                 blurRadius: 24,
                 offset: Offset(0, 14),
               ),

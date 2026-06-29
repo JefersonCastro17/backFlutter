@@ -106,7 +106,7 @@ class _SplashPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: Color(0xFFF4A300)),
+              CircularProgressIndicator(color: Color(0xFFF59E0B)),
               SizedBox(height: 16),
               Text(
                 'Cargando Mercapleno...',

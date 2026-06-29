@@ -1,8 +1,8 @@
 :root {
-  --primary: #2563eb;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --bg: #f1f5f9;
+  --primary: var(--color-principal, #0B4A8B);
+  --success: var(--color-exito, #22c55e);
+  --danger: var(--color-peligro, #dc2626);
+  --bg: var(--color-fondo-base, #f1f5f9);
 }
 
 .container {

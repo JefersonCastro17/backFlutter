@@ -1,9 +1,9 @@
 :root{
---blue:#0b63b8;
---orange:#f6a11b;
---card-red:#e66464;
---muted:#f3f3f3;
---row-gray:#efefef;
+  --blue: var(--color-principal, #0B4A8B);
+  --orange: var(--color-acento, #F59E0B);
+  --card-red: #e66464;
+  --muted: #f3f3f3;
+  --row-gray: #efefef;
 
 }
 

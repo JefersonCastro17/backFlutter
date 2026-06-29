@@ -12,6 +12,16 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const uploadsRoot = join(process.cwd(), 'uploads');
 
+  // Prevent browser requests for /favicon.ico from generating NotFoundExceptions
+  // Return 204 (No Content) early to keep logs clean when no favicon is provided.
+  app.use((req: any, res: any, next: any) => {
+    if (req.url === '/favicon.ico' || req.originalUrl === '/favicon.ico') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
   mkdirSync(uploadsRoot, { recursive: true });
 
   app.setGlobalPrefix('api');

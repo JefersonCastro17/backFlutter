@@ -111,6 +111,20 @@ export const AuthProvider = ({ children }) => {
         // Limpiar localStorage inmediatamente
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        // Limpia el carrito local del cliente al cerrar sesion (clave usada en Cart hook)
+        try {
+            localStorage.removeItem('productosCarrito');
+            localStorage.removeItem('lastPurchasedCart');
+        } catch (e) {
+            console.warn('No se pudo limpiar el carrito de localStorage:', e);
+        }
+        // Notificar a cualquier listener (p.ej. hook de carrito) para que sincronice estado en memoria
+        try {
+            window.dispatchEvent(new CustomEvent('mercapleno:clearCart'));
+            window.dispatchEvent(new CustomEvent('mercapleno:logout'));
+        } catch (e) {
+            // Silencioso si no hay window (SSR) o falla el dispatch
+        }
     };
 
     // Funciones de utilidad (mejoradas para acceder a IDs correctos)

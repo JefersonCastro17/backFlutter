@@ -4,10 +4,10 @@
   --catalog-ink: #11203b;
   --catalog-muted: #5f6f87;
   --catalog-bg: #f5f7fb;
-  --catalog-accent: #0f6cbd;
-  --catalog-accent-dark: #0b4d85;
-  --catalog-warm: #f3b126;
-  --catalog-warm-dark: #d08a00;
+  --catalog-accent: var(--color-principal);
+  --catalog-accent-dark: var(--color-principal-dark);
+  --catalog-warm: var(--color-acento);
+  --catalog-warm-dark: var(--color-acento-dark);
   --catalog-card: rgba(255, 255, 255, 0.94);
   --catalog-border: rgba(148, 163, 184, 0.22);
   --catalog-shadow: 0 20px 45px rgba(15, 23, 42, 0.1);

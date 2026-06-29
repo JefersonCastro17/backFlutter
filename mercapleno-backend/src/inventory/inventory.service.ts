@@ -33,7 +33,7 @@ export class InventoryService {
       FROM productos p
       LEFT JOIN categoria c ON p.id_categoria = c.id_categoria
       LEFT JOIN stock_actual s ON p.id_productos = s.id_productos
-      WHERE p.estado <> 'Deshabilitado'
+      WHERE LOWER(TRIM(COALESCE(p.estado, ''))) NOT IN ('deshabilitado', 'no disponible', 'no-disponible')
       ORDER BY p.nombre ASC
     `;
 
@@ -58,16 +58,12 @@ export class InventoryService {
   async registerMovement(dto: RegisterMovementDto, userId?: number) {
     const id_mov_db = dto.tipo_movimiento === 'ENTRADA' ? 2 : 3;
     const id_usuario = Number.isFinite(Number(userId)) ? Number(userId) : 1;
-    const normalizedDocumentId = this.normalizeReferenceDocumentId(dto.id_documento);
+    const normalizedDocumentId = this.normalizeReferenceDocumentId(dto.id_documento) || 'ND';
 
     let connection: PoolConnection | null = null;
     let lowStockAlert: LowStockAlert | null = null;
 
     try {
-      if (!normalizedDocumentId) {
-        throw new BadRequestException({ error: 'Debe seleccionar un documento de referencia valido' });
-      }
-
       connection = await this.db.getConnection();
       await connection.beginTransaction();
       await this.ensureReferenceDocumentExists(connection, dto.tipo_movimiento, normalizedDocumentId);

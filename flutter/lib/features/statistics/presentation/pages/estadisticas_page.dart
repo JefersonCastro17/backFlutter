@@ -79,6 +79,20 @@ class _EstadisticasPageState extends State<EstadisticasPage> {
     }
   }
 
+  Future<void> _handleSharePdf() async {
+    try {
+      await widget.controller.compartirPdf(widget.token);
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.startsWith('AuthError')) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sesión expirada. Inicia sesión nuevamente.')));
+        Navigator.pushReplacementNamed(context, '/login');
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al compartir PDF: $msg')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -111,6 +125,7 @@ class _EstadisticasPageState extends State<EstadisticasPage> {
               IconButton(onPressed: _fetchData, icon: const Icon(Icons.refresh), tooltip: 'Actualizar'),
               IconButton(onPressed: _handlePrintPdf, icon: const Icon(Icons.print), tooltip: 'Imprimir PDF'),
               IconButton(onPressed: _handleDownloadPdf, icon: const Icon(Icons.download), tooltip: 'Descargar PDF'),
+              IconButton(onPressed: _handleSharePdf, icon: const Icon(Icons.share), tooltip: 'Compartir PDF'),
             ],
           ),
           body: RefreshIndicator(

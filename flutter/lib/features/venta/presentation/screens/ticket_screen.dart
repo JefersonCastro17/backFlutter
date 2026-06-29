@@ -12,12 +12,14 @@ class TicketScreen extends StatefulWidget {
   final Map<String, dynamic> ventaResult;
   final List<ProductoModel> productosComprados;
   final VentaTotals totales;
+  final String paymentMethod;
 
   const TicketScreen({
     super.key,
     required this.ventaResult,
     required this.productosComprados,
     required this.totales,
+    required this.paymentMethod,
   });
 
   @override
@@ -41,6 +43,7 @@ class _TicketScreenState extends State<TicketScreen> {
       final fechaStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
       final ticketId = (widget.ventaResult['id'] ?? widget.ventaResult['ticketId'] ?? 'N/A').toString();
       final cliente = widget.ventaResult['cliente'] ?? 'Consumidor Final';
+      final paymentMethod = _paymentMethodLabel(widget.paymentMethod);
 
       final pdf = pw.Document();
 
@@ -107,6 +110,14 @@ class _TicketScreenState extends State<TicketScreen> {
                   children: [
                     pw.Text('Cliente:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
                     pw.Text(cliente, style: const pw.TextStyle(fontSize: 11)),
+                  ],
+                ),
+                pw.SizedBox(height: 4),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Método de Pago:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                    pw.Text(paymentMethod, style: const pw.TextStyle(fontSize: 11)),
                   ],
                 ),
                 pw.SizedBox(height: 16),
@@ -252,7 +263,24 @@ class _TicketScreenState extends State<TicketScreen> {
     }
     return savedPath;
   }
-
+  String _paymentMethodLabel(String rawMethod) {
+    switch (rawMethod.toUpperCase()) {
+      case 'M1':
+        return 'Efectivo';
+      case 'M2':
+        return 'Tarjeta Crédito';
+      case 'M3':
+        return 'Tarjeta Débito';
+      case 'M4':
+        return 'Transferencia';
+      case 'M5':
+        return 'Nequi';
+      case 'M6':
+        return 'Daviplata';
+      default:
+        return rawMethod.isNotEmpty ? rawMethod : 'Desconocido';
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // Formato de moneda localizado para Colombia (igual que la Web)
@@ -264,6 +292,7 @@ class _TicketScreenState extends State<TicketScreen> {
     
     // Fecha actual para el comprobante
     final fechaStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    final paymentMethod = _paymentMethodLabel(widget.paymentMethod);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -323,6 +352,12 @@ class _TicketScreenState extends State<TicketScreen> {
                       'CLIENTE:', 
                       widget.ventaResult['cliente'] ?? 'Consumidor Final',
                       isBold: false
+                    ),
+                    const SizedBox(height: 4),
+                    _buildHeaderInfo(
+                      'MÉTODO DE PAGO:',
+                      paymentMethod,
+                      isBold: false,
                     ),
                     const SizedBox(height: 30),
 

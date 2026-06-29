@@ -37,6 +37,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = exceptionResponse as string;
       }
 
+      if (exception instanceof Error) {
+        this.logger.error(exception.stack);
+      }
+
       // Codes específicos por status
       switch (status) {
         case 400:

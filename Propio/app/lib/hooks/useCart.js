@@ -23,6 +23,50 @@ export const useCart = () => {
   }, [cart]);
   // --------------------------------------------------------------------------
 
+  // Escucha eventos globales para limpiar el carrito (p.ej. logout)
+  useEffect(() => {
+    const handler = () => {
+      setCart([]);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('lastPurchasedCart');
+      } catch (e) {
+        // noop
+      }
+    };
+
+    window.addEventListener('mercapleno:clearCart', handler);
+    return () => window.removeEventListener('mercapleno:clearCart', handler);
+  }, []);
+
+  // Bloquea el inicio de nuevos procesos de checkout si se detecta logout
+  const sessionActiveRef = (function () {
+    let active = true;
+    return {
+      isActive: () => active,
+      setInactive: () => {
+        active = false;
+      }
+    };
+  })();
+
+  useEffect(() => {
+    const onLogout = () => {
+      sessionActiveRef.setInactive();
+      // Aseguramos limpiar el carrito también
+      setCart([]);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('lastPurchasedCart');
+      } catch (e) {
+        // noop
+      }
+    };
+
+    window.addEventListener('mercapleno:logout', onLogout);
+    return () => window.removeEventListener('mercapleno:logout', onLogout);
+  }, []);
+
 
   // --- FUNCIONES DE MANEJO DEL CARRITO ---
   const addToCart = (product) => {
@@ -78,6 +122,10 @@ export const useCart = () => {
   // --- FUNCIÓN DE CHECKOUT (CORREGIDA: ACEPTA id_metodo) ---
   //CAMBIO CLAVE 1: Ahora acepta el id_metodo como parámetro
   const processCheckout = async (id_metodo) => { 
+    if (!sessionActiveRef.isActive()) {
+      throw new Error('Sesion cerrada. Checkout cancelado.');
+    }
+
     if (cart.length > 0) {
         
         // 1. Prepara los datos para el backend
@@ -90,8 +138,10 @@ export const useCart = () => {
             // CAMBIO CLAVE 2: Incluye el id_metodo recibido
             id_metodo: id_metodo 
         };
-
         try {
+            if (!sessionActiveRef.isActive()) {
+              throw new Error('Sesion cerrada antes de enviar la orden.');
+            }
             // 2. Envía la orden al API
             const result = await sendOrder(orderData); 
             

@@ -13,6 +13,11 @@ const getStockTone = (producto) => {
   return "healthy";
 };
 
+const isVisibleInStock = (producto) => {
+  const status = String(producto?.estado || "").trim().toLowerCase();
+  return status !== "deshabilitado" && status !== "no disponible" && status !== "no-disponible";
+};
+
 const getStockColor = (producto) => {
   const tone = getStockTone(producto);
   if (tone === "critical") return "#dc3545";
@@ -23,33 +28,12 @@ const getStockColor = (producto) => {
 const ModalMovimiento = ({
   producto,
   onCerrar,
-  onGuardar,
-  documentOptionsByType,
-  loadingDocumentOptions,
-  documentOptionsError
+  onGuardar
 }) => {
   const [cantidad, setCantidad] = useState("");
   const [tipo, setTipo] = useState("ENTRADA");
-  const [documento, setDocumento] = useState("");
   const [comentario, setComentario] = useState("");
   const [error, setError] = useState(null);
-  const currentDocumentOptions = documentOptionsByType[tipo] || [];
-  const canUseManualDocumentCode = !loadingDocumentOptions && currentDocumentOptions.length === 0;
-
-  useEffect(() => {
-    if (currentDocumentOptions.length === 0) {
-      setDocumento("");
-      return;
-    }
-
-    const currentDocumentExists = currentDocumentOptions.some(
-      (option) => option.id_documento === documento
-    );
-
-    if (!currentDocumentExists) {
-      setDocumento("");
-    }
-  }, [currentDocumentOptions, documento]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,22 +50,10 @@ const ModalMovimiento = ({
       return;
     }
 
-    if (!documento || documento.trim() === "") {
-      setError("Debe seleccionar o ingresar un documento de referencia.");
-      return;
-    }
-
-    // Validar que id_documento solo contenga letras mayúsculas y números
-    if (!/^[A-Z0-9]+$/.test(documento)) {
-      setError("El ID de documento solo puede contener letras (mayúsculas) y números.");
-      return;
-    }
-
     onGuardar({
       id_producto: producto.id,
       tipo_movimiento: tipo,
       cantidad: numCantidad,
-      id_documento: documento,
       comentario: comentario.trim()
     });
   };
@@ -138,62 +110,6 @@ const ModalMovimiento = ({
               </small>
             </div>
 
-            <div className="form-group">
-              <label>Doc. de Referencia</label>
-              {canUseManualDocumentCode ? (
-                <>
-                  <input
-                    type="text"
-                    value={documento}
-                    onChange={(e) => {
-                      // Solo permitir letras y números, máximo 5 caracteres
-                      const soloAlfanumericos = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
-                      setDocumento(soloAlfanumericos);
-                      setError(null);
-                    }}
-                    className="input"
-                    placeholder="Ej: CC, RUC, 01, 02"
-                    maxLength={5}
-                    required
-                  />
-                  <small className="help-text">
-                    No hay documentos cargados. Ingresa un código (ej: CC, RUC, 01).
-                  </small>
-                </>
-              ) : (
-                <select
-                  value={documento}
-                  onChange={(e) => {
-                    setDocumento(e.target.value);
-                    setError(null);
-                  }}
-                  className="input"
-                  required
-                  disabled={loadingDocumentOptions}
-                >
-                  {loadingDocumentOptions ? (
-                    <option value="">Cargando documentos...</option>
-                  ) : currentDocumentOptions.length > 0 ? (
-                    <>
-                      <option value="">Seleccione un documento</option>
-                      {currentDocumentOptions.map((option) => (
-                        <option key={`${tipo}-${option.id_documento}`} value={option.id_documento}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </>
-                  ) : (
-                    <option value="">No hay documentos disponibles</option>
-                  )}
-                </select>
-              )}
-              {documentOptionsError && !canUseManualDocumentCode && (
-                <small className="help-text" style={{ color: "#dc3545" }}>
-                  {documentOptionsError}
-                </small>
-              )}
-            </div>
-
             <div className="form-group full-width">
               <label>Comentario</label>
               <textarea
@@ -229,12 +145,6 @@ export default function RegistroMovimientos() {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [toast, setToast] = useState(null);
-  const [documentOptionsByType, setDocumentOptionsByType] = useState({
-    ENTRADA: [],
-    SALIDA: []
-  });
-  const [loadingDocumentOptions, setLoadingDocumentOptions] = useState(false);
-  const [documentOptionsError, setDocumentOptionsError] = useState(null);
 
   const authorizedFetch = useCallback(
     async (endpoint, method = "GET", body = null) => {
@@ -262,7 +172,9 @@ export default function RegistroMovimientos() {
     setError(null);
     try {
       const data = await authorizedFetch("/productos", "GET");
-      setProductos(Array.isArray(data) ? data : []);
+      const productosArray = Array.isArray(data) ? data : [];
+      const visible = productosArray.filter(isVisibleInStock);
+      setProductos(visible);
     } catch (err) {
       setError("Error al cargar la lista de productos: " + err.message);
     } finally {
@@ -270,33 +182,11 @@ export default function RegistroMovimientos() {
     }
   }, [authorizedFetch]);
 
-  const fetchReferenceDocuments = useCallback(async () => {
-    setLoadingDocumentOptions(true);
-    setDocumentOptionsError(null);
-
-    try {
-      const [entradaDocs, salidaDocs] = await Promise.all([
-        authorizedFetch("/documentos?tipo_movimiento=ENTRADA", "GET"),
-        authorizedFetch("/documentos?tipo_movimiento=SALIDA", "GET")
-      ]);
-
-      setDocumentOptionsByType({
-        ENTRADA: Array.isArray(entradaDocs) ? entradaDocs : [],
-        SALIDA: Array.isArray(salidaDocs) ? salidaDocs : []
-      });
-    } catch {
-      setDocumentOptionsError("No se pudieron cargar los documentos de referencia.");
-    } finally {
-      setLoadingDocumentOptions(false);
-    }
-  }, [authorizedFetch]);
-
   useEffect(() => {
     if (token) {
       fetchProductos();
-      fetchReferenceDocuments();
     }
-  }, [fetchProductos, fetchReferenceDocuments, token]);
+  }, [fetchProductos, token]);
 
   const mostrarToast = (mensaje, tipo = "success") => {
     setToast({ mensaje, tipo });
@@ -443,9 +333,6 @@ export default function RegistroMovimientos() {
           producto={productoSeleccionado}
           onCerrar={() => setProductoSeleccionado(null)}
           onGuardar={handleGuardarMovimiento}
-          documentOptionsByType={documentOptionsByType}
-          loadingDocumentOptions={loadingDocumentOptions}
-          documentOptionsError={documentOptionsError}
         />
       )}
 

@@ -7,7 +7,6 @@ import 'package:mercapleno_appv1/core/config/app_config.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../controllers/inventory_controller.dart';
 import '../../domain/entities/product.dart';
-import '../../domain/entities/reference_document.dart';
 import 'movements_page.dart';
 
 class InventoryPage extends StatefulWidget {
@@ -250,8 +249,8 @@ class _InventoryPageState extends State<InventoryPage> {
 
   List<Product> _applyFilters(int threshold) {
     return widget.controller.products.where((p) {
-      // Si tu entidad Product NO tiene campo `sku`, elimina la segunda condición.
-      // Si SÍ lo tiene como String?, déjalo tal cual.
+      // Si el backend ya excluye productos deshabilitados, no es necesario
+      // filtrar por estado aquí. El filtro de inventario se basa en stock.
       final matchesSearch =
           p.name.toLowerCase().contains(_searchQuery) ||
           p.id.toLowerCase().contains(_searchQuery) ||
@@ -321,7 +320,7 @@ class _InventoryPageState extends State<InventoryPage> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E3A5F),
+                            color: Color(0xFF123C63),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -722,15 +721,9 @@ class _MovementFormState extends State<_MovementForm> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedProductId;
   final _qtyCtl = TextEditingController();
-  final _docCodeCtl = TextEditingController();
   final _noteCtl = TextEditingController();
 
   String? _movementType;
-  List<ReferenceDocument> _documentOptions = [];
-  String? _selectedDocumentId;
-  bool _isLoadingDocuments = false;
-  String? _documentLoadError;
-
   bool _isSaving = false;
   int _currentStock = 0;
 
@@ -743,45 +736,13 @@ class _MovementFormState extends State<_MovementForm> {
       _currentStock =
           widget.controller.currentStock[_selectedProductId!] ?? 0;
     }
-    _loadDocumentOptions();
   }
 
   @override
   void dispose() {
     _qtyCtl.dispose();
-    _docCodeCtl.dispose();
     _noteCtl.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadDocumentOptions() async {
-    if (_movementType == null) return;
-    setState(() {
-      _isLoadingDocuments = true;
-      _selectedDocumentId = null;
-      _docCodeCtl.clear();
-      _documentLoadError = null;
-    });
-
-    try {
-      final options =
-          await widget.controller.getReferenceDocuments(_movementType!);
-      if (mounted) {
-        setState(() {
-          _documentOptions = options;
-          _isLoadingDocuments = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _documentOptions = [];
-          _documentLoadError =
-              'No se pudieron cargar los documentos de referencia.';
-          _isLoadingDocuments = false;
-        });
-      }
-    }
   }
 
   void _onProductSelected(String? productId) {
@@ -836,7 +797,6 @@ class _MovementFormState extends State<_MovementForm> {
                             setState(() {
                               _movementType = val;
                             });
-                            _loadDocumentOptions();
                           }
                         },
                   decoration: const InputDecoration(
@@ -906,100 +866,6 @@ class _MovementFormState extends State<_MovementForm> {
 
                 const SizedBox(height: 16),
 
-                // Documento de Referencia
-                if (_isLoadingDocuments)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          'Cargando documentos...',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  )
-                else if (_documentOptions.isNotEmpty)
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedDocumentId,
-                    items: [
-                      const DropdownMenuItem(
-                        value: null,
-                        child: Text('Seleccione un documento'),
-                      ),
-                      ..._documentOptions.map(
-                        (doc) => DropdownMenuItem(
-                          value: doc.idDocumento,
-                          child: Text(doc.label),
-                        ),
-                      ),
-                    ],
-                    onChanged: _isSaving
-                        ? null
-                        : (val) {
-                            setState(() {
-                              _selectedDocumentId = val;
-                            });
-                          },
-                    decoration: const InputDecoration(
-                      labelText: 'Doc. de Referencia',
-                    ),
-                    validator: (v) => v == null || v.isEmpty
-                        ? 'Debe seleccionar un documento de referencia'
-                        : null,
-                  )
-                else
-                  TextFormField(
-                    controller: _docCodeCtl,
-                    enabled: !_isSaving,
-                    decoration: const InputDecoration(
-                      labelText: 'Doc. de Referencia',
-                      hintText: 'Ej: CC, RUC, 01, 02',
-                      helperText:
-                          'No hay documentos cargados. Ingresa un código.',
-                    ),
-                    onChanged: (val) {
-                      final upper = val
-                          .toUpperCase()
-                          .replaceAll(RegExp(r'[^A-Z0-9]'), '');
-                      if (upper != val) {
-                        _docCodeCtl.value = TextEditingValue(
-                          text: upper,
-                          selection:
-                              TextSelection.collapsed(offset: upper.length),
-                        );
-                      }
-                    },
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Debe ingresar un documento de referencia';
-                      }
-                      final cleaned = value.trim();
-                      if (cleaned.length > 5) {
-                        return 'El código no puede superar los 5 caracteres';
-                      }
-                      if (!RegExp(r'^[A-Z0-9]+$').hasMatch(cleaned)) {
-                        return 'Solo se permiten letras mayúsculas y números';
-                      }
-                      return null;
-                    },
-                  ),
-
-                if (_documentLoadError != null && !_isLoadingDocuments)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _documentLoadError!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-
                 const SizedBox(height: 16),
 
                 // Nota / Comentario
@@ -1045,20 +911,7 @@ class _MovementFormState extends State<_MovementForm> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final documentId = _documentOptions.isNotEmpty
-        ? _selectedDocumentId
-        : _docCodeCtl.text.trim();
-
-    if (documentId == null || documentId.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Debe seleccionar o ingresar un documento de referencia.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    final documentId = 'ND';
 
     setState(() => _isSaving = true);
 
