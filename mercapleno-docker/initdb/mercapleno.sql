@@ -158,7 +158,7 @@ CREATE TABLE `productos` (
   `id_categoria` int(11) DEFAULT NULL,
   `id_proveedor` int(11) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
-  `estado` enum('Disponible','Agotado','En tránsito','Descontinuado') DEFAULT 'Disponible',
+  `estado` enum('Disponible','Agotado','Deshabilitado') DEFAULT 'Disponible',
   `imagen` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
