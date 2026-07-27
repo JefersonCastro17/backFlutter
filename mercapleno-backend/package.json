@@ -15,7 +15,9 @@
     "prisma:pull": "prisma db pull --schema prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema prisma/schema.prisma",
-    "test": "jest",
+    "postinstall": "prisma generate --schema prisma/schema.prisma",
+    "test": "jest --config jest.config.js --runTestsByPath tester/unitarias/users-admin/users.unit.test.js tester/unitarias/auth/auth.unit.test.js tester/integracion/user-admin/users.integration.test.js tester/integracion/auth/auth.integration.test.js",
+    "test:report": "jest --config jest.config.js --runTestsByPath tester/unitarias/users-admin/users.unit.test.js tester/unitarias/auth/auth.unit.test.js tester/integracion/user-admin/users.integration.test.js tester/integracion/auth/auth.integration.test.js",
     "test:watch": "jest --watch"
   },
   "dependencies": {
@@ -27,9 +29,9 @@
     "@nestjs/swagger": "^11.4.5",
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.7",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.4",
     "joi": "^18.0.1",
     "mysql2": "^3.10.1",
@@ -53,7 +55,9 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.3",
     "jest": "^30.0.0",
+    "jest-html-reporters": "^3.1.7",
     "prisma": "^6.19.0",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.6.2",
     "ts-node": "^10.9.2",
@@ -66,8 +70,11 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testMatch": [
+      "**/tester/**/*.test.js",
+      "**/?(*.)+(spec|test).[tj]s?(x)"
+    ],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

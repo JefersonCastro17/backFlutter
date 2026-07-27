@@ -40,6 +40,7 @@ class ProductModel extends ProductEntity {
       return 0;
     }
 
+//ToJson()
     return ProductModel(
       id: parseInt(json['id_productos']),
       nombre: json['nombre'] ?? '',
