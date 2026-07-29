@@ -17,6 +17,7 @@ import AdminDashboard from './routes/AdminDashboard';
 import Estadisticas from './routes/Estadisticas'; 
 import UsuarioC from './routes/usuarioC'; 
 import ListaProductosAdmin from './routes/Lista_productos'; // CRUD Completo (Admin)
+import Proveedores from './routes/Proveedores';
 // import ListaProductosEmployee from './routes/Lista_productos_Empleado'; // <-- ELIMINADO/COMENTADO
 import RegistroMovimientos from './routes/RegistroMovimientos'; // <-- AÑADIDO (CAMBIO 1)
 
@@ -120,6 +121,9 @@ function App() {
 				{/* 🔑 GESTIÓN DE USUARIOS (Rol 1 - Administrador) */}
 				<Route path="/admin/users" element={
                     <RoleRoute requiredRoles={[1]} element={<UsuarioC />} /> 
+                } />
+                <Route path="/admin/proveedores" element={
+                    <RoleRoute requiredRoles={[1]} element={<Proveedores />} /> 
                 } />
 
 				{/* 🔑 MÓDULO DE REPORTES (Roles 1 y 2) */}

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mercapleno_appv1/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:mercapleno_appv1/features/venta/presentation/pages/catalogo_page.dart';
 import 'package:mercapleno_appv1/features/Products/presentation/pages/lista_productos_page.dart';
+import 'package:mercapleno_appv1/features/Products/presentation/pages/proveedores_page.dart';
 import 'package:mercapleno_appv1/features/Products/presentation/controllers/product_controller.dart';
+import 'package:mercapleno_appv1/features/Products/presentation/controllers/proveedor_controller.dart';
 import 'package:mercapleno_appv1/features/users_admin/presentation/pages/users_admin_list_page.dart';
 import 'package:mercapleno_appv1/features/statistics/presentation/pages/estadisticas_page.dart';
 import 'package:mercapleno_appv1/features/statistics/presentation/controllers/reportes_controller.dart';
@@ -279,6 +281,23 @@ class _AdminDashboard extends StatelessWidget {
                                       builder: (context, inventoryController, child) =>
                                           InventoryPage(controller: inventoryController),
                                     ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          _DashboardCard(
+                            title: 'Proveedores',
+                            description: 'Gestión de proveedores: registrar, editar y eliminar.',
+                            icon: Icons.people_alt_rounded,
+                            color: const Color(0xFF10B981),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProveedoresPage(
+                                    controller: ProveedorController(),
+                                    token: token,
                                   ),
                                 ),
                               );

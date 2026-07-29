@@ -44,11 +44,6 @@ export class RegisterDto {
   @IsDateString()
   fecha_nacimiento: string;
 
-  @ApiProperty({ required: false, default: 3 })
-  @IsOptional()
-  @IsInt()
-  id_rol?: number = 3;
-
   @ApiProperty()
   @IsInt()
   id_tipo_identificacion: number;

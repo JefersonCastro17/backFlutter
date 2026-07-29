@@ -113,6 +113,29 @@ describe('Pruebas de Integración - Mock API CRUD de Usuarios y Autenticación',
     });
 
 
+    app.get('/api/admin/users/roles', checkMockAuth, (req, res) => {
+      return res.json({
+        success: true,
+        roles: [
+          { id: 1, nombre: 'Administrador' },
+          { id: 2, nombre: 'Empleado' },
+          { id: 3, nombre: 'Cliente' },
+        ],
+      });
+    });
+
+    // R - consultar usuario específico por ID
+    app.get('/api/admin/users/:id', checkMockAuth, (req, res) => {
+      const userId = Number(req.params.id);
+      const user = mockUsersDb.find((u) => u.id === userId);
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      }
+
+      return res.json({ success: true, usuario: user });
+    });
+
     // C - crear con validación de duplicados
     app.post('/api/admin/users', checkMockAuth, (req, res) => {
       const { nombre, apellido, email, password, direccion, fecha_nacimiento, id_rol, id_tipo_identificacion, numero_identificacion } = req.body;
@@ -253,6 +276,28 @@ describe('Pruebas de Integración - Mock API CRUD de Usuarios y Autenticación',
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(1); //solo está el administrador inicial
+    });
+
+    it('debe listar los roles disponibles para el CRUD de usuarios', async () => {
+      const res = await request(app)
+        .get('/api/admin/users/roles')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.roles)).toBe(true);
+      expect(res.body.roles.length).toBeGreaterThan(0);
+    });
+
+    it('debe consultar un usuario específico por ID', async () => {
+      const res = await request(app)
+        .get('/api/admin/users/1')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.usuario).toBeDefined();
+      expect(res.body.usuario.id).toBe(1);
     });
 
     it('debe crear un nuevo usuario administrativo', async () => {

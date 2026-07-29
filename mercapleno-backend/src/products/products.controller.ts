@@ -45,6 +45,33 @@ export class ProductsController {
     return this.productsService.getCatalogs();
   }
 
+  @Get('proveedores')
+  @ApiOperation({ summary: 'Listar proveedores' })
+  findProveedores() {
+    return this.productsService.findProveedores();
+  }
+
+  @Post('proveedores')
+  @ApiOperation({ summary: 'Crear proveedor' })
+  createProveedor(@Body() dto: { nombre?: string; apellido?: string; telefono?: string }) {
+    return this.productsService.createProveedor(dto);
+  }
+
+  @Put('proveedores/:id')
+  @ApiOperation({ summary: 'Actualizar proveedor' })
+  updateProveedor(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { nombre?: string; apellido?: string; telefono?: string },
+  ) {
+    return this.productsService.updateProveedor(id, dto);
+  }
+
+  @Delete('proveedores/:id')
+  @ApiOperation({ summary: 'Eliminar proveedor' })
+  removeProveedor(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.removeProveedor(id);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar productos' })
   findAll() {

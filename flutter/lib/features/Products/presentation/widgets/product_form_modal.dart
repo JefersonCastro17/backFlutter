@@ -2,13 +2,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/product_entity.dart';
-import '../utils/product_catalogs.dart';
+import '../../domain/entities/proveedor_entity.dart';
 
+/// Modal de formulario para crear o editar un producto.
+/// Recibe [suppliers] y [categories] dinámicamente desde el backend
+/// en lugar de usar catálogos estáticos.
 class ProductFormModal extends StatefulWidget {
   final ProductEntity? producto;
+  final List<ProveedorEntity> suppliers;
+  final Map<int, String> categories;
   final Function(Map<String, String> fields, File? imageFile) onSave;
 
-  const ProductFormModal({super.key, this.producto, required this.onSave});
+  const ProductFormModal({
+    super.key,
+    this.producto,
+    required this.suppliers,
+    required this.categories,
+    required this.onSave,
+  });
 
   @override
   State<ProductFormModal> createState() => _ProductFormModalState();
@@ -20,8 +31,8 @@ class _ProductFormModalState extends State<ProductFormModal> {
   late TextEditingController _precioCtrl;
   late TextEditingController _descCtrl;
   String _estado = 'Disponible';
-  int _idCategoria = 1;
-  int _idProveedor = 1;
+  int? _idCategoria;
+  int? _idProveedor;
   File? _selectedImage;
   String? _imageError;
 
@@ -34,16 +45,25 @@ class _ProductFormModalState extends State<ProductFormModal> {
     );
     _descCtrl = TextEditingController(text: widget.producto?.descripcion ?? '');
     _estado = widget.producto?.estado ?? 'Disponible';
-    _idCategoria = widget.producto?.idCategoria ?? 1;
-    _idProveedor = widget.producto?.idProveedor ?? 1;
 
-    // Validar que los IDs existan en los catálogos
-    if (!ProductCatalogs.categorias.containsKey(_idCategoria)) {
-      _idCategoria = ProductCatalogs.categorias.keys.first;
-    }
-    if (!ProductCatalogs.proveedores.containsKey(_idProveedor)) {
-      _idProveedor = ProductCatalogs.proveedores.keys.first;
-    }
+    // Inicializar con el ID del producto si existe y está en el catálogo
+    final catId = widget.producto?.idCategoria;
+    _idCategoria = (catId != null && widget.categories.containsKey(catId))
+        ? catId
+        : (widget.categories.isNotEmpty ? widget.categories.keys.first : null);
+
+    final supId = widget.producto?.idProveedor;
+    _idProveedor = (supId != null && widget.suppliers.any((s) => s.id == supId))
+        ? supId
+        : (widget.suppliers.isNotEmpty ? widget.suppliers.first.id : null);
+  }
+
+  @override
+  void dispose() {
+    _nombreCtrl.dispose();
+    _precioCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage() async {
@@ -61,7 +81,9 @@ class _ProductFormModalState extends State<ProductFormModal> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.producto?.imagen.isNotEmpty == true ? widget.producto!.imagen : null;
+    final imageUrl =
+        widget.producto?.imagen.isNotEmpty == true ? widget.producto!.imagen : null;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -76,6 +98,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header ─────────────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -93,6 +116,8 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 ],
               ),
               const SizedBox(height: 8),
+
+              // ── Nombre ─────────────────────────────────────────────────────
               TextFormField(
                 controller: _nombreCtrl,
                 decoration: const InputDecoration(
@@ -103,13 +128,16 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
+
+              // ── Precio ─────────────────────────────────────────────────────
               TextFormField(
                 controller: _precioCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Precio',
                   hintText: 'Ingrese el precio del producto',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -122,36 +150,50 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 },
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: _idCategoria,
-                decoration: const InputDecoration(labelText: 'Categoría'),
-                isExpanded: true,
-                items: ProductCatalogs.categorias.entries
-                    .map((e) => DropdownMenuItem<int>(
-                          value: e.key,
-                          child: Text(e.value),
-                        ))
-                    .toList(),
-                validator: (v) => v == null ? 'Seleccione una categoría' : null,
-                onChanged: (v) => setState(() => _idCategoria = v!),
-              ),
+
+              // ── Categoría (dinámica) ────────────────────────────────────────
+              if (widget.categories.isEmpty)
+                const _EmptyDropdownHint(label: 'Categoría', icon: Icons.category_outlined)
+              else
+                DropdownButtonFormField<int>(
+                  value: _idCategoria,
+                  decoration: const InputDecoration(labelText: 'Categoría'),
+                  isExpanded: true,
+                  items: widget.categories.entries
+                      .map((e) => DropdownMenuItem<int>(
+                            value: e.key,
+                            child: Text(e.value),
+                          ))
+                      .toList(),
+                  validator: (v) =>
+                      v == null ? 'Seleccione una categoría' : null,
+                  onChanged: (v) => setState(() => _idCategoria = v),
+                ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: _idProveedor,
-                decoration: const InputDecoration(labelText: 'Proveedor'),
-                isExpanded: true,
-                items: ProductCatalogs.proveedores.entries
-                    .map((e) => DropdownMenuItem<int>(
-                          value: e.key,
-                          child: Text(e.value),
-                        ))
-                    .toList(),
-                validator: (v) => v == null ? 'Seleccione un proveedor' : null,
-                onChanged: (v) => setState(() => _idProveedor = v!),
-              ),
+
+              // ── Proveedor (dinámico desde backend) ─────────────────────────
+              if (widget.suppliers.isEmpty)
+                const _EmptyDropdownHint(label: 'Proveedor', icon: Icons.people_outline)
+              else
+                DropdownButtonFormField<int>(
+                  value: _idProveedor,
+                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  isExpanded: true,
+                  items: widget.suppliers
+                      .map((p) => DropdownMenuItem<int>(
+                            value: p.id,
+                            child: Text(p.nombreCompleto),
+                          ))
+                      .toList(),
+                  validator: (v) =>
+                      v == null ? 'Seleccione un proveedor' : null,
+                  onChanged: (v) => setState(() => _idProveedor = v),
+                ),
               const SizedBox(height: 12),
+
+              // ── Estado ─────────────────────────────────────────────────────
               DropdownButtonFormField<String>(
-                initialValue: _estado,
+                value: _estado,
                 decoration: const InputDecoration(labelText: 'Estado'),
                 items: const [
                   DropdownMenuItem(
@@ -159,11 +201,14 @@ class _ProductFormModalState extends State<ProductFormModal> {
                     child: Text('Disponible'),
                   ),
                   DropdownMenuItem(value: 'Agotado', child: Text('Agotado')),
-                  DropdownMenuItem(value: 'Deshabilitado', child: Text('Deshabilitado')),
+                  DropdownMenuItem(
+                      value: 'Deshabilitado', child: Text('Deshabilitado')),
                 ],
                 onChanged: (v) => setState(() => _estado = v!),
               ),
               const SizedBox(height: 12),
+
+              // ── Descripción ────────────────────────────────────────────────
               TextFormField(
                 controller: _descCtrl,
                 decoration: const InputDecoration(
@@ -176,6 +221,8 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 textInputAction: TextInputAction.newline,
               ),
               const SizedBox(height: 16),
+
+              // ── Imagen ─────────────────────────────────────────────────────
               Text(
                 'Imagen del producto',
                 style: TextStyle(
@@ -204,7 +251,9 @@ class _ProductFormModalState extends State<ProductFormModal> {
                             : Image.network(
                                 imageUrl!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.grey),
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.grey),
                               ),
                       ),
                     ),
@@ -215,7 +264,8 @@ class _ProductFormModalState extends State<ProductFormModal> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'Usando imagen existente. Si no seleccionas otra, se conservará la actual.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    style:
+                        TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                 ),
               if (_imageError != null)
@@ -223,10 +273,13 @@ class _ProductFormModalState extends State<ProductFormModal> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     _imageError!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                    style:
+                        const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
               const SizedBox(height: 20),
+
+              // ── Botones ────────────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -250,8 +303,8 @@ class _ProductFormModalState extends State<ProductFormModal> {
                             'precio': _precioCtrl.text.trim(),
                             'estado': _estado,
                             'descripcion': _descCtrl.text.trim(),
-                            'id_categoria': _idCategoria.toString(),
-                            'id_proveedor': _idProveedor.toString(),
+                            'id_categoria': (_idCategoria ?? 1).toString(),
+                            'id_proveedor': (_idProveedor ?? 1).toString(),
                           },
                           _selectedImage,
                         );
@@ -270,3 +323,31 @@ class _ProductFormModalState extends State<ProductFormModal> {
   }
 }
 
+/// Widget informativo cuando la lista dinámica está vacía.
+class _EmptyDropdownHint extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _EmptyDropdownHint({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade400),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey.shade500, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'No hay $label disponibles',
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+}

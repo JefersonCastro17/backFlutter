@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -229,6 +229,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const rolClienteID = 3;
     const verificationCode = this.generateCode();
     const verificationHash = this.hashCode(verificationCode);
     const verificationExpiresAt = this.buildExpiresAt(envs.emailVerificationTtlMin);
@@ -242,7 +243,7 @@ export class AuthService {
           password: hashedPassword,
           direccion: dto.direccion,
           fecha_nacimiento: new Date(dto.fecha_nacimiento),
-          id_rol: dto.id_rol ?? 3,
+          id_rol: rolClienteID,
           id_tipo_identificacion: dto.id_tipo_identificacion,
           numero_identificacion: dto.numero_identificacion,
           email_verified: false,

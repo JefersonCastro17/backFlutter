@@ -46,6 +46,11 @@
   border-color: var(--primary);
 }
 
+.input-busqueda--small {
+  max-width: 110px;
+  min-width: 90px;
+}
+
 .select-filtro-rol {
   padding: 10px 14px;
   border-radius: 8px;

@@ -19,6 +19,18 @@ export class UsersAdminController {
     return this.usersAdminService.findAll(search);
   }
 
+  @Get('roles')
+  @ApiOperation({ summary: 'Listar roles disponibles' })
+  findRoles() {
+    return this.usersAdminService.findRoles();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Consultar usuario administrativo por ID' })
+  findOne(@Param('id') id: string) {
+    return this.usersAdminService.findOne(id);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Crear usuario' })
   create(@Body() dto: CreateUserAdminDto) {

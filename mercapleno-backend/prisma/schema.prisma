@@ -95,6 +95,7 @@ model proveedor {
   nombre       String?     @db.VarChar(50)
   apellido     String?     @db.VarChar(50)
   telefono     String?     @db.VarChar(20)
+  activo       Boolean     @default(true)
   productos    productos[]
 }
 

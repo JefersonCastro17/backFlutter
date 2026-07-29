@@ -97,6 +97,56 @@ export class UsersAdminService {
     };
   }
 
+  async findRoles() {
+    const roles = await this.prisma.roles.findMany({
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    return {
+      success: true,
+      roles: roles.map((role) => ({
+        id: role.id,
+        nombre: role.nombre,
+      })),
+    };
+  }
+
+  async findOne(id: string) {
+    const userId = this.parseUserId(id);
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: userId },
+      include: {
+        roles: true,
+        tipos_identificacion: true,
+      },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    return {
+      success: true,
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        direccion: usuario.direccion,
+        fecha_nacimiento: usuario.fecha_nacimiento,
+        rol: usuario.roles?.nombre ?? null,
+        tipo_identificacion: usuario.tipos_identificacion?.nombre ?? null,
+        numero_identificacion: usuario.numero_identificacion,
+        id_rol: usuario.id_rol,
+        id_tipo_identificacion: usuario.id_tipo_identificacion,
+        email_verified: usuario.email_verified,
+      },
+    };
+  }
+
   async create(dto: CreateUserAdminDto) {
     const existingEmail = await this.prisma.usuarios.findFirst({
       where: { email: dto.email },
