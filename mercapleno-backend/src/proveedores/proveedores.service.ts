@@ -22,12 +22,69 @@ export class ProveedoresService {
     return parsed;
   }
 
+  /** Valida nombre/apellido: no vacíos */
+  private validateTexto(valor: string | undefined, campo: string): string {
+    const cleaned = (valor ?? '').trim();
+    if (!cleaned) {
+      throw new BadRequestException({
+        success: false,
+        message: `El ${campo} es obligatorio`,
+      });
+    }
+    return cleaned;
+  }
+
+  /** Valida que el teléfono sea obligatorio y tenga exactamente 10 dígitos */
+  private validateTelefono(telefono: string | undefined | null): string {
+    const cleaned = (telefono ?? '').trim();
+
+    if (!cleaned) {
+      throw new BadRequestException({
+        success: false,
+        message: 'El teléfono es obligatorio',
+      });
+    }
+
+    if (!/^\d{10}$/.test(cleaned)) {
+      throw new BadRequestException({
+        success: false,
+        message: 'El teléfono debe contener exactamente 10 dígitos numéricos',
+      });
+    }
+
+    return cleaned;
+  }
+
+  /** Verifica que el teléfono no esté ya registrado en otro proveedor */
+  private async checkTelefonoUnico(telefono: string, excludeId?: number) {
+    const existente = await this.prisma.proveedor.findFirst({
+      where: {
+        telefono,
+        ...(excludeId ? { id_proveedor: { not: excludeId } } : {}),
+      },
+      select: { id_proveedor: true },
+    });
+
+    if (existente) {
+      throw new ConflictException({
+        success: false,
+        message: 'Ya existe un proveedor registrado con ese número de teléfono',
+      });
+    }
+  }
+
   private handlePrismaError(error: unknown, fallback: string): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2003') {
         throw new ConflictException({
           success: false,
           message: 'No se puede realizar la operación porque el proveedor tiene productos asociados',
+        });
+      }
+      if (error.code === 'P2002') {
+        throw new ConflictException({
+          success: false,
+          message: 'Ya existe un proveedor registrado con ese número de teléfono',
         });
       }
     }
@@ -37,7 +94,6 @@ export class ProveedoresService {
   async findAll(search?: string, soloActivos = true) {
     const where: Prisma.proveedorWhereInput = {};
 
-    // Por defecto solo devuelve proveedores activos
     if (soloActivos) {
       where.activo = true;
     }
@@ -78,7 +134,6 @@ export class ProveedoresService {
   }
 
   async findAllAdmin(search?: string) {
-    // Admin ve todos (activos e inactivos) para gestionar
     return this.findAll(search, false);
   }
 
@@ -115,12 +170,18 @@ export class ProveedoresService {
   }
 
   async create(dto: CreateProveedorDto) {
+    const nombre = this.validateTexto(dto.nombre, 'nombre');
+    const apellido = this.validateTexto(dto.apellido, 'apellido');
+    const telefono = this.validateTelefono(dto.telefono);
+
+    await this.checkTelefonoUnico(telefono);
+
     try {
       const proveedor = await this.prisma.proveedor.create({
         data: {
-          nombre: dto.nombre.trim(),
-          apellido: dto.apellido.trim(),
-          telefono: dto.telefono?.trim() ?? null,
+          nombre,
+          apellido,
+          telefono,
           activo: true,
         },
       });
@@ -157,10 +218,19 @@ export class ProveedoresService {
       return { success: true, message: 'Sin cambios para actualizar' };
     }
 
+    const nombre = dto.nombre !== undefined ? this.validateTexto(dto.nombre, 'nombre') : undefined;
+    const apellido = dto.apellido !== undefined ? this.validateTexto(dto.apellido, 'apellido') : undefined;
+
+    let telefono: string | undefined;
+    if (dto.telefono !== undefined) {
+      telefono = this.validateTelefono(dto.telefono);
+      await this.checkTelefonoUnico(telefono, proveedorId);
+    }
+
     const data: Prisma.proveedorUpdateInput = {
-      ...(dto.nombre !== undefined ? { nombre: dto.nombre.trim() } : {}),
-      ...(dto.apellido !== undefined ? { apellido: dto.apellido.trim() } : {}),
-      ...(dto.telefono !== undefined ? { telefono: dto.telefono.trim() || null } : {}),
+      ...(nombre !== undefined ? { nombre } : {}),
+      ...(apellido !== undefined ? { apellido } : {}),
+      ...(telefono !== undefined ? { telefono } : {}),
     };
 
     try {
@@ -175,7 +245,6 @@ export class ProveedoresService {
     }
   }
 
-  /** Deshabilita un proveedor (soft-delete). No importa si tiene productos. */
   async deshabilitar(id: string) {
     const proveedorId = this.parseId(id);
 
@@ -200,7 +269,6 @@ export class ProveedoresService {
     return { success: true, message: 'Proveedor deshabilitado correctamente' };
   }
 
-  /** Reactiva un proveedor deshabilitado. */
   async habilitar(id: string) {
     const proveedorId = this.parseId(id);
 

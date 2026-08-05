@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
-  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -28,14 +27,13 @@ export class CreateProveedorDto {
 
   @ApiProperty({
     example: '3001234567',
-    description: 'Teléfono del proveedor',
+    description: 'Teléfono del proveedor (exactamente 10 dígitos)',
     required: true,
   })
   @IsNotEmpty({ message: 'El teléfono es obligatorio' })
   @IsString({ message: 'El teléfono debe ser un texto' })
-  @MaxLength(10, { message: 'El teléfono no puede superar los 10 caracteres' })
-  @Matches(/^[0-9]+$/, {
-    message: 'El teléfono solo puede contener números',
+  @Matches(/^[0-9]{10}$/, {
+    message: 'El teléfono debe contener exactamente 10 dígitos numéricos',
   })
   telefono: string;
 }

@@ -158,11 +158,58 @@ function validateVerifyLoginCode(data = {}) {
     };
 }
 
+function validateRequestPasswordReset(data = {}) {
+    const errors = [];
+
+    if (!data.email) {
+        errors.push('El correo es obligatorio');
+    } else if (typeof data.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+        errors.push('El correo electrónico no es válido');
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors,
+    };
+}
+
+function validateResetPassword(data = {}) {
+    const errors = [];
+
+    const password = data.password ?? data.PASSWORD;
+
+    if (!password) {
+        errors.push('La nueva contraseña es obligatoria');
+    } else if (typeof password !== 'string') {
+        errors.push('La nueva contraseña debe ser un texto');
+    } else {
+        if (password.length < 12) {
+            errors.push('La contraseña debe tener al menos 12 caracteres');
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push('La contraseña debe contener al menos una letra mayúscula');
+        }
+        if (!/\d/.test(password)) {
+            errors.push('La contraseña debe contener al menos un número');
+        }
+        if (!/[@$!%*?&]/.test(password)) {
+            errors.push('La contraseña debe contener al menos un carácter especial (@$!%*?&)');
+        }
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors,
+    };
+}
+
 module.exports = {
     validateRegister,
     validateLogin,
     validateVerifyEmail,
     validateVerifyLoginCode,
+    validateRequestPasswordReset,
+    validateResetPassword,
 };
 
 

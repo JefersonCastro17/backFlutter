@@ -23,9 +23,8 @@ export class UpdateProveedorDto {
   @ApiProperty({ example: '3001234567', required: false })
   @IsOptional()
   @IsString({ message: 'El teléfono debe ser un texto' })
-  @MaxLength(10, { message: 'El teléfono no puede superar los 10 caracteres' })
-  @Matches(/^[0-9]+$/, {
-    message: 'El teléfono solo puede contener dígitos',
+  @Matches(/^[0-9]{10}$/, {
+    message: 'El teléfono debe contener exactamente 10 dígitos numéricos',
   })
   telefono?: string;
 }
