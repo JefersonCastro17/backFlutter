@@ -16,9 +16,12 @@
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema prisma/schema.prisma",
     "postinstall": "prisma generate --schema prisma/schema.prisma",
-    "test": "jest --config jest.config.js --runTestsByPath tester/unitarias/users-admin/users.unit.test.js tester/unitarias/auth/auth.unit.test.js tester/unitarias/auth/auth.service.test.ts tester/unitarias/users-admin/users-admin.service.test.ts tester/integracion/user-admin/users.integration.test.js tester/integracion/auth/auth.integration.test.js",
-    "test:report": "jest --config jest.config.js --runTestsByPath tester/unitarias/users-admin/users.unit.test.js tester/unitarias/auth/auth.unit.test.js tester/unitarias/auth/auth.service.test.ts tester/unitarias/users-admin/users-admin.service.test.ts tester/integracion/user-admin/users.integration.test.js tester/integracion/auth/auth.integration.test.js",
-    "test:watch": "jest --watch"
+    "test": "jest --config jest.config.js",
+    "test:report": "jest --config jest.config.js",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --config jest.config.js --coverage",
+    "test:sonar": "jest --config jest.config.js --coverage --forceExit",
+    "test:unit-only": "jest --config jest.config.js --coverage --forceExit --testPathPattern=unitarias"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.9",

@@ -74,7 +74,49 @@ describe('UsersAdminService (Unitarias)', () => {
       email_verified: true,
     };
 
-    // CP-054
+    // CP-049
+    it('debe registrar correctamente un nuevo usuario con datos válidos', async () => {
+      const findFirstSpy = jest.spyOn(prismaService.usuarios, 'findFirst');
+      findFirstSpy.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hash' as never);
+      const createSpy = jest.spyOn(prismaService.usuarios, 'create').mockResolvedValue({ id: 1 } as any);
+
+      const result = await service.create(createUserDto);
+
+      expect(findFirstSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        where: { email: createUserDto.email },
+        select: { id: true },
+      }));
+      expect(findFirstSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({
+        where: { numero_identificacion: createUserDto.numero_identificacion },
+        select: { id: true },
+      }));
+      expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 10);
+      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          id_rol: createUserDto.id_rol,
+          numero_identificacion: createUserDto.numero_identificacion,
+        }),
+      }));
+      expect(result).toEqual({ success: true, message: 'Usuario agregado correctamente' });
+    });
+
+    // CP-050
+    it('debe rechazar si el correo electrónico ya está registrado', async () => {
+      jest.spyOn(prismaService.usuarios, 'findFirst').mockResolvedValue({ id: 1 } as any);
+
+      await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
+    });
+
+    // CP-051
+    it('debe rechazar si el número de identificación ya está registrado', async () => {
+      const findFirstSpy = jest.spyOn(prismaService.usuarios, 'findFirst');
+      findFirstSpy.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 2 } as any);
+
+      await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
+    });
+
+    // CP-052
     it('debe propagar un error si la BD rechaza por campos obligatorios', async () => {
       // Aunque la validación principal es del DTO, si llega a Prisma con nulos fallaría
       // Aquí simulamos que Prisma rechaza la creación
@@ -85,7 +127,7 @@ describe('UsersAdminService (Unitarias)', () => {
       await expect(service.create(createUserDto)).rejects.toThrow();
     });
 
-    // CP-056
+    // CP-054
     it('debe almacenar correctamente el rol asignado al nuevo usuario', async () => {
       jest.spyOn(prismaService.usuarios, 'findFirst').mockResolvedValue(null);
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hash' as never);
@@ -96,7 +138,7 @@ describe('UsersAdminService (Unitarias)', () => {
       expect(prismaService.usuarios.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            id_rol: 2, // CP-056: Verificar que id_rol se mapea correctamente a la BD
+            id_rol: 2, // CP-054: Verificar que id_rol se mapea correctamente a la BD
           }),
         }),
       );

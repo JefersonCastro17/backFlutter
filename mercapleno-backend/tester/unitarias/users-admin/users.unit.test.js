@@ -28,6 +28,7 @@ describe('Pruebas Unitarias - Validación del Registro de Usuarios', () => {
   });
 
 
+  // CP-052
   it('debe fallar si faltan campos obligatorios en el objeto', () => {
     delete validUser.nombre;
     delete validUser.email;
