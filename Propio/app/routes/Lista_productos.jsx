@@ -21,7 +21,6 @@ const EMPTY_CATALOGS = {
   proveedores: []
 };
 
-const DISABLED_PRODUCT_STATUS = "Deshabilitado";
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 
 function createProductFormState(producto = {}) {
@@ -47,6 +46,7 @@ function buildProductFormData(formData) {
   payload.append("estado", String(formData.estado ?? "Disponible").trim());
 
   const descripcion = String(formData.descripcion ?? "").trim();
+
   if (descripcion) {
     payload.append("descripcion", descripcion);
   }
@@ -82,14 +82,19 @@ function ProductModal({
   onCerrar,
   onGuardar
 }) {
-  const [formData, setFormData] = useState(() => createProductFormState(initialData));
+  const [formData, setFormData] = useState(() =>
+    createProductFormState(initialData)
+  );
+
   const [previewSrc, setPreviewSrc] = useState(() =>
     initialData?.imagen ? resolveImageUrl(initialData.imagen) : ""
   );
 
   useEffect(() => {
     setFormData(createProductFormState(initialData));
-    setPreviewSrc(initialData?.imagen ? resolveImageUrl(initialData.imagen) : "");
+    setPreviewSrc(
+      initialData?.imagen ? resolveImageUrl(initialData.imagen) : ""
+    );
   }, [initialData]);
 
   useEffect(() => {
@@ -105,13 +110,18 @@ function ProductModal({
       if (currentPreview.startsWith("blob:")) {
         URL.revokeObjectURL(currentPreview);
       }
+
       return nextPreview;
     });
   };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleImageChange = (event) => {
@@ -127,7 +137,9 @@ function ProductModal({
       return;
     }
 
-    updatePreview(formData.imagen ? resolveImageUrl(formData.imagen) : "");
+    updatePreview(
+      formData.imagen ? resolveImageUrl(formData.imagen) : ""
+    );
   };
 
   const handleSubmit = (event) => {
@@ -143,7 +155,12 @@ function ProductModal({
             <span className="products-modal__eyebrow">Producto</span>
             <h2>{title}</h2>
           </div>
-          <button type="button" className="products-btn products-btn--ghost" onClick={onCerrar}>
+
+          <button
+            type="button"
+            className="products-btn products-btn--ghost"
+            onClick={onCerrar}
+          >
             Cerrar
           </button>
         </div>
@@ -152,18 +169,31 @@ function ProductModal({
           {initialData?.id_productos ? (
             <div className="products-modal__field">
               <label>ID</label>
-              <input type="text" name="id_productos" value={initialData.id_productos} disabled />
+              <input
+                type="text"
+                name="id_productos"
+                value={initialData.id_productos}
+                disabled
+              />
             </div>
           ) : null}
 
           <div className="products-modal__grid">
             <div className="products-modal__field">
               <label>Nombre</label>
-              <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
+
+              <input
+                type="text"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="products-modal__field">
               <label>Precio</label>
+
               <input
                 type="number"
                 name="precio"
@@ -177,20 +207,31 @@ function ProductModal({
 
             <div className="products-modal__field">
               <label>Categoria</label>
+
               <select
                 name="id_categoria"
                 value={formData.id_categoria}
                 onChange={handleChange}
-                disabled={loadingCatalogs || categorias.length === 0}
+                disabled={
+                  loadingCatalogs || categorias.length === 0
+                }
                 required
               >
                 {loadingCatalogs ? (
-                  <option value="">Cargando categorias...</option>
+                  <option value="">
+                    Cargando categorias...
+                  </option>
                 ) : (
                   <>
-                    <option value="">Seleccione una categoria</option>
+                    <option value="">
+                      Seleccione una categoria
+                    </option>
+
                     {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
+                      <option
+                        key={categoria.id}
+                        value={categoria.id}
+                      >
                         {categoria.nombre}
                       </option>
                     ))}
@@ -201,20 +242,31 @@ function ProductModal({
 
             <div className="products-modal__field">
               <label>Proveedor</label>
+
               <select
                 name="id_proveedor"
                 value={formData.id_proveedor}
                 onChange={handleChange}
-                disabled={loadingCatalogs || proveedores.length === 0}
+                disabled={
+                  loadingCatalogs || proveedores.length === 0
+                }
                 required
               >
                 {loadingCatalogs ? (
-                  <option value="">Cargando proveedores...</option>
+                  <option value="">
+                    Cargando proveedores...
+                  </option>
                 ) : (
                   <>
-                    <option value="">Seleccione un proveedor</option>
+                    <option value="">
+                      Seleccione un proveedor
+                    </option>
+
                     {proveedores.map((proveedor) => (
-                      <option key={proveedor.id} value={proveedor.id}>
+                      <option
+                        key={proveedor.id}
+                        value={proveedor.id}
+                      >
                         {proveedor.nombre}
                       </option>
                     ))}
@@ -225,34 +277,59 @@ function ProductModal({
 
             <div className="products-modal__field">
               <label>Estado</label>
-              <select name="estado" value={formData.estado} onChange={handleChange} required>
+
+              <select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                required
+              >
                 <option value="Disponible">Disponible</option>
                 <option value="Agotado">Agotado</option>
-                <option value="Deshabilitado">Deshabilitado</option>
+                <option value="Deshabilitado">
+                  Deshabilitado
+                </option>
               </select>
-              <small className="help-text">Disponible / Agotado / Deshabilitado</small>
+
+              <small className="help-text">
+                Disponible / Agotado / Deshabilitado
+              </small>
             </div>
 
             <div className="products-modal__field products-modal__field--full">
               <label>Descripcion</label>
-              <textarea name="descripcion" rows="4" value={formData.descripcion} onChange={handleChange} />
+
+              <textarea
+                name="descripcion"
+                rows="4"
+                value={formData.descripcion}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="products-modal__field products-modal__field--full">
               <label>Imagen del producto</label>
+
               <input
                 type="file"
                 name="imagen"
                 accept={ACCEPTED_IMAGE_TYPES}
                 onChange={handleImageChange}
               />
+
               <p className="products-modal__help">
                 Formatos: JPG, PNG, WEBP o GIF. Tamano maximo: 5 MB.
               </p>
+
               {formData.imageFile ? (
-                <p className="products-modal__help">Archivo seleccionado: {formData.imageFile.name}</p>
+                <p className="products-modal__help">
+                  Archivo seleccionado: {formData.imageFile.name}
+                </p>
               ) : initialData?.imagen ? (
-                <p className="products-modal__help">Si no eliges un archivo nuevo, se mantiene la imagen actual.</p>
+                <p className="products-modal__help">
+                  Si no eliges un archivo nuevo, se mantiene la imagen
+                  actual.
+                </p>
               ) : null}
             </div>
           </div>
@@ -261,7 +338,10 @@ function ProductModal({
             <div className="products-modal__preview">
               <img
                 src={previewSrc}
-                alt={formData.nombre || "Vista previa del producto"}
+                alt={
+                  formData.nombre ||
+                  "Vista previa del producto"
+                }
                 onError={(event) => {
                   event.currentTarget.onerror = null;
                   event.currentTarget.src = FALLBACK_IMAGE;
@@ -271,10 +351,18 @@ function ProductModal({
           ) : null}
 
           <div className="products-modal__actions">
-            <button type="button" className="products-btn products-btn--ghost" onClick={onCerrar}>
+            <button
+              type="button"
+              className="products-btn products-btn--ghost"
+              onClick={onCerrar}
+            >
               Cancelar
             </button>
-            <button type="submit" className="products-btn products-btn--primary">
+
+            <button
+              type="submit"
+              className="products-btn products-btn--primary"
+            >
               {submitLabel}
             </button>
           </div>
@@ -284,7 +372,15 @@ function ProductModal({
   );
 }
 
-function ProductRow({ producto, onEdit, onDelete }) {
+function ProductRow({
+  producto,
+  onEdit,
+  onToggleEstado
+}) {
+  const estaDeshabilitado =
+    String(producto.estado || "").trim().toLowerCase() ===
+    "deshabilitado";
+
   return (
     <tr>
       <td>
@@ -301,27 +397,69 @@ function ProductRow({ producto, onEdit, onDelete }) {
           </div>
 
           <div className="products-table__main">
-            <p className="products-table__id">ID {producto.id_productos}</p>
+            <p className="products-table__id">
+              ID {producto.id_productos}
+            </p>
+
             <strong>{producto.nombre}</strong>
-            <span>{producto.descripcion || "Sin descripcion registrada."}</span>
+
+            <span>
+              {producto.descripcion ||
+                "Sin descripcion registrada."}
+            </span>
           </div>
         </div>
       </td>
+
       <td>{formatPrice(producto.precio)}</td>
-      <td>{producto.categoria_nombre || producto.id_categoria}</td>
-      <td>{producto.proveedor_nombre || producto.id_proveedor}</td>
+
       <td>
-        <span className={`products-status ${String(producto.estado).toLowerCase() === "agotado" ? "is-empty" : String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" : "is-ready"}`}>
+        {producto.categoria_nombre || producto.id_categoria}
+      </td>
+
+      <td>
+        {producto.proveedor_nombre || producto.id_proveedor}
+      </td>
+
+      <td>
+        <span
+          className={`products-status ${
+            String(producto.estado).toLowerCase() ===
+            "agotado"
+              ? "is-empty"
+              : estaDeshabilitado
+              ? "is-disabled"
+              : "is-ready"
+          }`}
+        >
           {producto.estado}
         </span>
       </td>
+
       <td>
         <div className="products-table__actions">
-          <button type="button" className="products-btn products-btn--secondary" onClick={() => onEdit(producto.id_productos)}>
+          <button
+            type="button"
+            className="products-btn products-btn--secondary"
+            onClick={() =>
+              onEdit(producto.id_productos)
+            }
+          >
             Editar
           </button>
-          <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
-            Deshabilitar
+
+          <button
+            type="button"
+            className={
+              estaDeshabilitado
+                ? "products-btn products-btn--primary"
+                : "products-btn products-btn--danger"
+            }
+            onClick={() => onToggleEstado(producto)}
+          >
+            {estaDeshabilitado
+              ? "Habilitar"
+              : "Deshabilitar"}
           </button>
         </div>
       </td>
@@ -329,7 +467,15 @@ function ProductRow({ producto, onEdit, onDelete }) {
   );
 }
 
-function ProductCard({ producto, onEdit, onDelete }) {
+function ProductCard({
+  producto,
+  onEdit,
+  onToggleEstado
+}) {
+  const estaDeshabilitado =
+    String(producto.estado || "").trim().toLowerCase() ===
+    "deshabilitado";
+
   return (
     <article className="products-card">
       <div className="products-card__header">
@@ -346,31 +492,70 @@ function ProductCard({ producto, onEdit, onDelete }) {
 
         <div className="products-card__heading">
           <p>ID {producto.id_productos}</p>
+
           <h3>{producto.nombre}</h3>
-          <span className={`products-status ${
-          String(producto.estado).toLowerCase() === "agotado" ? "is-empty" :
-          String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" :
-          "is-ready"
-        }}`}>
+
+          <span
+            className={`products-status ${
+              String(producto.estado).toLowerCase() ===
+              "agotado"
+                ? "is-empty"
+                : estaDeshabilitado
+                ? "is-disabled"
+                : "is-ready"
+            }`}
+          >
             {producto.estado}
           </span>
         </div>
       </div>
 
-      <p className="products-card__price">{formatPrice(producto.precio)}</p>
-      <p className="products-card__description">{producto.descripcion || "Sin descripcion registrada."}</p>
+      <p className="products-card__price">
+        {formatPrice(producto.precio)}
+      </p>
+
+      <p className="products-card__description">
+        {producto.descripcion ||
+          "Sin descripcion registrada."}
+      </p>
 
       <div className="products-card__meta">
-        <span>Categoria: {producto.categoria_nombre || producto.id_categoria}</span>
-        <span>Proveedor: {producto.proveedor_nombre || producto.id_proveedor}</span>
+        <span>
+          Categoria:{" "}
+          {producto.categoria_nombre ||
+            producto.id_categoria}
+        </span>
+
+        <span>
+          Proveedor:{" "}
+          {producto.proveedor_nombre ||
+            producto.id_proveedor}
+        </span>
       </div>
 
       <div className="products-card__actions">
-        <button type="button" className="products-btn products-btn--secondary" onClick={() => onEdit(producto.id_productos)}>
+        <button
+          type="button"
+          className="products-btn products-btn--secondary"
+          onClick={() =>
+            onEdit(producto.id_productos)
+          }
+        >
           Editar
         </button>
-        <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
-          Desabilitar
+
+        <button
+          type="button"
+          className={
+            estaDeshabilitado
+              ? "products-btn products-btn--primary"
+              : "products-btn products-btn--danger"
+          }
+          onClick={() => onToggleEstado(producto)}
+        >
+          {estaDeshabilitado
+            ? "Habilitar"
+            : "Deshabilitar"}
         </button>
       </div>
     </article>
@@ -379,22 +564,41 @@ function ProductCard({ producto, onEdit, onDelete }) {
 
 export default function Lista_productos() {
   const { token, logout } = useAuthContext();
+
   const [productos, setProductos] = useState([]);
-  const [catalogos, setCatalogos] = useState(EMPTY_CATALOGS);
-  const [loadingCatalogs, setLoadingCatalogs] = useState(true);
+  const [catalogos, setCatalogos] =
+    useState(EMPTY_CATALOGS);
+
+  const [loadingCatalogs, setLoadingCatalogs] =
+    useState(true);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [productoEditando, setProductoEditando] = useState(null);
-  const [modalAgregarVisible, setModalAgregarVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
+
+  const [productoEditando, setProductoEditando] =
+    useState(null);
+
+  const [modalAgregarVisible, setModalAgregarVisible] =
+    useState(false);
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const [statusFilter, setStatusFilter] =
+    useState("todos");
 
   const handleAuthError = (err) => {
-    if (err?.status === 401 || err?.status === 403) {
+    if (
+      err?.status === 401 ||
+      err?.status === 403
+    ) {
       logout();
-      setError("Sesion expirada. Inicia sesion nuevamente.");
+      setError(
+        "Sesion expirada. Inicia sesion nuevamente."
+      );
       return true;
     }
+
     return false;
   };
 
@@ -403,14 +607,24 @@ export default function Lista_productos() {
     setError(null);
 
     try {
-      const data = await httpRequest(API_ENDPOINTS.products.crud, {
-        auth: true,
-        token
-      });
-      setProductos(Array.isArray(data) ? data : []);
+      const data = await httpRequest(
+        API_ENDPOINTS.products.crud,
+        {
+          auth: true,
+          token
+        }
+      );
+
+      setProductos(
+        Array.isArray(data) ? data : []
+      );
     } catch (err) {
       if (handleAuthError(err)) return;
-      setError(err.message || "Error de conexion con el servidor.");
+
+      setError(
+        err.message ||
+          "Error de conexion con el servidor."
+      );
     } finally {
       setLoading(false);
     }
@@ -420,18 +634,31 @@ export default function Lista_productos() {
     setLoadingCatalogs(true);
 
     try {
-      const data = await httpRequest(API_ENDPOINTS.products.catalogs, {
-        auth: true,
-        token
-      });
+      const data = await httpRequest(
+        API_ENDPOINTS.products.catalogs,
+        {
+          auth: true,
+          token
+        }
+      );
 
       setCatalogos({
-        categorias: Array.isArray(data?.categorias) ? data.categorias : [],
-        proveedores: Array.isArray(data?.proveedores) ? data.proveedores : []
+        categorias: Array.isArray(data?.categorias)
+          ? data.categorias
+          : [],
+
+        proveedores: Array.isArray(data?.proveedores)
+          ? data.proveedores
+          : []
       });
     } catch (err) {
       if (handleAuthError(err)) return;
-      setError(err.message || "No se pudieron cargar categorias y proveedores.");
+
+      setError(
+        err.message ||
+          "No se pudieron cargar categorias y proveedores."
+      );
+
       setCatalogos(EMPTY_CATALOGS);
     } finally {
       setLoadingCatalogs(false);
@@ -450,76 +677,181 @@ export default function Lista_productos() {
   }, [token]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
+    const normalizedSearch =
+      searchTerm.trim().toLowerCase();
 
     return productos.filter((producto) => {
       const matchesSearch =
         !normalizedSearch ||
-        String(producto.id_productos).includes(normalizedSearch) ||
-        String(producto.nombre || "").toLowerCase().includes(normalizedSearch) ||
-        String(producto.descripcion || "").toLowerCase().includes(normalizedSearch) ||
-        String(producto.categoria_nombre || "").toLowerCase().includes(normalizedSearch) ||
-        String(producto.proveedor_nombre || "").toLowerCase().includes(normalizedSearch) ||
-        String(producto.id_categoria || "").includes(normalizedSearch) ||
-        String(producto.id_proveedor || "").includes(normalizedSearch);
+        String(producto.id_productos)
+          .includes(normalizedSearch) ||
+        String(producto.nombre || "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(producto.descripcion || "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(producto.categoria_nombre || "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(producto.proveedor_nombre || "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(producto.id_categoria || "")
+          .includes(normalizedSearch) ||
+        String(producto.id_proveedor || "")
+          .includes(normalizedSearch);
 
-      const productStatus = String(producto.estado || "").trim().toLowerCase();
+      const productStatus = String(
+        producto.estado || ""
+      )
+        .trim()
+        .toLowerCase();
+
       const matchesStatus =
-        statusFilter === "todos"
-          ? true
-          : statusFilter === "disponible"
-          ? productStatus === "disponible"
-          : statusFilter === "agotado"
-          ? productStatus === "agotado"
-          : statusFilter === "deshabilitado"
-          ? productStatus === "deshabilitado"
-          : true;
+        (statusFilter === "todos" &&
+          productStatus !== "deshabilitado") ||
+
+        (statusFilter === "disponible" &&
+          productStatus !== "agotado" &&
+          productStatus !== "deshabilitado") ||
+
+        (statusFilter === "agotado" &&
+          productStatus === "agotado") ||
+
+        (statusFilter === "deshabilitado" &&
+          productStatus === "deshabilitado");
 
       return matchesSearch && matchesStatus;
     });
   }, [productos, searchTerm, statusFilter]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm(`Deshabilitar producto. No se elimina, solo se oculta. ¿Continuar?`)) return;
+  /*
+   * DESHABILITAR / HABILITAR PRODUCTO
+   *
+   * No elimina el producto.
+   * Solamente cambia su estado.
+   */
+  const handleToggleEstado = async (producto) => {
+    const estadoActual = String(
+      producto.estado || ""
+    )
+      .trim()
+      .toLowerCase();
 
-    const idNumerico = parseInt(String(id).replace(/[^\d]/g, ""), 10);
+    const estaDeshabilitado =
+      estadoActual === "deshabilitado";
+
+    const nuevoEstado = estaDeshabilitado
+      ? "Disponible"
+      : "Deshabilitado";
+
+    const mensaje = estaDeshabilitado
+      ? `¿Deseas habilitar el producto "${producto.nombre}"?`
+      : `¿Deseas deshabilitar el producto "${producto.nombre}"?`;
+
+    if (!window.confirm(mensaje)) {
+      return;
+    }
+
+    const idNumerico = parseInt(
+      String(producto.id_productos).replace(
+        /[^\d]/g,
+        ""
+      ),
+      10
+    );
+
     if (Number.isNaN(idNumerico)) {
-      alert("Error: ID de producto no valido para la deshabilitacion.");
+      alert("Error: ID de producto no válido.");
       return;
     }
 
     try {
-      // Send a JSON body when only updating the `estado` field.
-      // Using JSON avoids multipart boundaries for a simple update
-      // and is supported by the backend controller.
-      const payload = { estado: DISABLED_PRODUCT_STATUS };
+      /*
+       * Enviamos los datos completos porque el UpdateProductDto
+       * puede requerir los campos principales del producto.
+       */
+      const payload = new FormData();
 
-      await httpRequest(`${API_ENDPOINTS.products.crud}/${idNumerico}`, {
-        method: "PUT",
-        data: payload,
-        auth: true,
-        token
-      });
-
-      setProductos((current) =>
-        current.map((producto) =>
-          producto.id_productos === idNumerico ? { ...producto, estado: DISABLED_PRODUCT_STATUS } : producto
-        )
+      payload.append(
+        "nombre",
+        String(producto.nombre ?? "").trim()
       );
-      // Refresh from server to ensure consistent state
+
+      payload.append(
+        "precio",
+        String(producto.precio ?? "").trim()
+      );
+
+      payload.append(
+        "id_categoria",
+        String(producto.id_categoria ?? "").trim()
+      );
+
+      payload.append(
+        "id_proveedor",
+        String(producto.id_proveedor ?? "").trim()
+      );
+
+      payload.append(
+        "estado",
+        nuevoEstado
+      );
+
+      const descripcion = String(
+        producto.descripcion ?? ""
+      ).trim();
+
+      if (descripcion) {
+        payload.append(
+          "descripcion",
+          descripcion
+        );
+      }
+
+      await httpRequest(
+        `${API_ENDPOINTS.products.crud}/${idNumerico}`,
+        {
+          method: "PUT",
+          data: payload,
+          auth: true,
+          token
+        }
+      );
+
       await fetchProductos();
 
-      alert(`Producto ${id} deshabilitado correctamente.`);
+      alert(
+        nuevoEstado === "Deshabilitado"
+          ? "Producto deshabilitado correctamente."
+          : "Producto habilitado correctamente."
+      );
     } catch (err) {
       if (handleAuthError(err)) return;
-      alert(err.message || "Error de conexion.");
+
+      alert(
+        err.message ||
+          "No se pudo cambiar el estado del producto."
+      );
     }
   };
 
   const handleEdit = (id) => {
-    const idNumerico = parseInt(String(id).replace(/[^\d]/g, ""), 10);
-    const productoAEditar = productos.find((producto) => producto.id_productos === idNumerico);
-    setProductoEditando(productoAEditar || null);
+    const idNumerico = parseInt(
+      String(id).replace(/[^\d]/g, ""),
+      10
+    );
+
+    const productoAEditar =
+      productos.find(
+        (producto) =>
+          producto.id_productos === idNumerico
+      );
+
+    setProductoEditando(
+      productoAEditar || null
+    );
   };
 
   const handleCloseModal = () => {
@@ -532,62 +864,115 @@ export default function Lista_productos() {
       return;
     }
 
-    const idNumerico = parseInt(String(productoEditando.id_productos).replace(/[^\d]/g, ""), 10);
+    const idNumerico = parseInt(
+      String(
+        productoEditando.id_productos
+      ).replace(/[^\d]/g, ""),
+      10
+    );
 
     if (Number.isNaN(idNumerico)) {
-      alert("Error: ID de producto no valido para la actualizacion.");
+      alert(
+        "Error: ID de producto no válido para la actualización."
+      );
       return;
     }
 
     try {
-      await httpRequest(`${API_ENDPOINTS.products.crud}/${idNumerico}`, {
-        method: "PUT",
-        data: payload,
-        auth: true,
-        token
-      });
+      await httpRequest(
+        `${API_ENDPOINTS.products.crud}/${idNumerico}`,
+        {
+          method: "PUT",
+          data: payload,
+          auth: true,
+          token
+        }
+      );
 
       handleCloseModal();
+
       await fetchProductos();
-      alert(`Producto ${productoEditando.id_productos} actualizado.`);
+
+      alert(
+        `Producto ${productoEditando.id_productos} actualizado.`
+      );
     } catch (err) {
       if (handleAuthError(err)) return;
-      alert(err.message || "Error de conexion.");
+
+      alert(
+        err.message ||
+          "Error de conexion."
+      );
     }
   };
 
   const handleAddSubmit = async (payload) => {
     try {
-      await httpRequest(API_ENDPOINTS.products.crud, {
-        method: "POST",
-        data: payload,
-        auth: true,
-        token
-      });
+      await httpRequest(
+        API_ENDPOINTS.products.crud,
+        {
+          method: "POST",
+          data: payload,
+          auth: true,
+          token
+        }
+      );
+
       handleCloseModal();
+
       await fetchProductos();
-      alert("Producto agregado correctamente.");
+
+      alert(
+        "Producto agregado correctamente."
+      );
     } catch (err) {
       if (handleAuthError(err)) return;
-      alert(err.message || "Error de conexion.");
+
+      alert(
+        err.message ||
+          "Error de conexion."
+      );
     }
   };
 
   return (
     <main className="products-shell">
       <div className="products-wrap">
+
         <section className="products-header-card">
           <div>
-            <span className="products-overline">Inventario</span>
-            <h1>Lista de productos</h1>
-            <p>Vista mas limpia para encontrar productos, revisar su imagen y editar rapido.</p>
+            <span className="products-overline">
+              Inventario
+            </span>
+
+            <h1>
+              Lista de productos
+            </h1>
+
+            <p>
+              Administra tus productos y cambia
+              su estado sin eliminarlos.
+            </p>
           </div>
 
           <div className="products-header-actions">
-            <button type="button" className="products-btn products-btn--ghost" onClick={() => window.history.back()}>
+            <button
+              type="button"
+              className="products-btn products-btn--ghost"
+              onClick={() =>
+                window.history.back()
+              }
+            >
               Volver
             </button>
-            <button type="button" className="products-btn products-btn--primary" onClick={() => setModalAgregarVisible(true)}>
+
+            <button
+              type="button"
+              className="products-btn products-btn--primary"
+              onClick={() =>
+                setModalAgregarVisible(true)
+              }
+            >
               Agregar producto
             </button>
           </div>
@@ -595,57 +980,116 @@ export default function Lista_productos() {
 
         <section className="products-toolbar">
           <div className="products-toolbar__field products-toolbar__field--grow">
-            <label htmlFor="product-search">Buscar</label>
+            <label htmlFor="product-search">
+              Buscar
+            </label>
+
             <input
               id="product-search"
               type="text"
               placeholder="Nombre, ID, categoria o proveedor"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
             />
           </div>
 
           <div className="products-toolbar__field">
-            <label htmlFor="product-status">Estado</label>
+            <label htmlFor="product-status">
+              Estado
+            </label>
+
             <select
               id="product-status"
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
+              onChange={(event) =>
+                setStatusFilter(
+                  event.target.value
+                )
+              }
             >
-               <option value="todos">Todos</option>
-               <option value="disponible">Disponibles</option>
-               <option value="agotado">Agotados</option>
-               <option value="deshabilitado">Deshabilitados</option>
+              <option value="todos">
+                Productos activos
+              </option>
+
+              <option value="disponible">
+                Disponibles
+              </option>
+
+              <option value="agotado">
+                Agotados
+              </option>
+
+              <option value="deshabilitado">
+                Productos deshabilitados
+              </option>
             </select>
           </div>
 
           <div className="products-toolbar__summary">
-            <span>{filteredProducts.length}</span>
-            <small>resultado(s)</small>
+            <span>
+              {filteredProducts.length}
+            </span>
+
+            <small>
+              resultado(s)
+            </small>
           </div>
         </section>
 
         <section className="products-section">
-          {loading ? <p className="products-state">Cargando productos...</p> : null}
-          {error ? <p className="products-state products-state--error">{error}</p> : null}
-          {!loadingCatalogs && (catalogos.categorias.length === 0 || catalogos.proveedores.length === 0) ? (
-            <p className="products-state products-state--error">
-              Faltan categorias o proveedores en la base de datos. El formulario de productos puede quedar incompleto hasta cargar esos catalogos.
+          {loading ? (
+            <p className="products-state">
+              Cargando productos...
             </p>
           ) : null}
 
-          {!loading && !error && filteredProducts.length === 0 ? (
+          {error ? (
+            <p className="products-state products-state--error">
+              {error}
+            </p>
+          ) : null}
+
+          {!loadingCatalogs &&
+          (catalogos.categorias.length === 0 ||
+            catalogos.proveedores.length === 0) ? (
+            <p className="products-state products-state--error">
+              Faltan categorias o proveedores en
+              la base de datos. El formulario de
+              productos puede quedar incompleto
+              hasta cargar esos catalogos.
+            </p>
+          ) : null}
+
+          {!loading &&
+          !error &&
+          filteredProducts.length === 0 ? (
             <div className="products-empty">
-              <h2>No encontramos productos con ese filtro</h2>
-              <p>Prueba limpiando la busqueda o cambiando el estado seleccionado.</p>
+              <h2>
+                No encontramos productos con ese filtro
+              </h2>
+
+              <p>
+                Prueba limpiando la busqueda o
+                cambiando el estado seleccionado.
+              </p>
             </div>
           ) : null}
 
-          {!loading && !error && filteredProducts.length > 0 ? (
+          {!loading &&
+          !error &&
+          filteredProducts.length > 0 ? (
             <>
               <div className="products-warning">
-                <strong>Atencion:</strong> al deshabilitar un producto, este seguira registrado en el sistema pero se ocultara en otras tablas de venta e inventario. No se elimina, y si el producto tiene registros relacionados puede afectar la trazabilidad.
+                <strong>Importante:</strong> al
+                deshabilitar un producto no se
+                elimina de la base de datos. El
+                producto pasa a la sección de
+                deshabilitados y puede volver a
+                habilitarse posteriormente.
               </div>
+
               <div className="products-table-wrap">
                 <table className="products-table">
                   <thead>
@@ -658,28 +1102,41 @@ export default function Lista_productos() {
                       <th>Acciones</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                    {filteredProducts.map((producto) => (
-                      <ProductRow
-                        key={producto.id_productos}
-                        producto={producto}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                      />
-                    ))}
+                    {filteredProducts.map(
+                      (producto) => (
+                        <ProductRow
+                          key={
+                            producto.id_productos
+                          }
+                          producto={producto}
+                          onEdit={handleEdit}
+                          onToggleEstado={
+                            handleToggleEstado
+                          }
+                        />
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
 
               <div className="products-cards">
-                {filteredProducts.map((producto) => (
-                  <ProductCard
-                    key={producto.id_productos}
-                    producto={producto}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
+                {filteredProducts.map(
+                  (producto) => (
+                    <ProductCard
+                      key={
+                        producto.id_productos
+                      }
+                      producto={producto}
+                      onEdit={handleEdit}
+                      onToggleEstado={
+                        handleToggleEstado
+                      }
+                    />
+                  )
+                )}
               </div>
             </>
           ) : null}
@@ -693,7 +1150,9 @@ export default function Lista_productos() {
           initialData={productoEditando}
           categorias={catalogos.categorias}
           proveedores={catalogos.proveedores}
-          loadingCatalogs={loadingCatalogs}
+          loadingCatalogs={
+            loadingCatalogs
+          }
           onCerrar={handleCloseModal}
           onGuardar={handleUpdateSubmit}
         />
@@ -706,7 +1165,9 @@ export default function Lista_productos() {
           initialData={EMPTY_PRODUCT_FORM}
           categorias={catalogos.categorias}
           proveedores={catalogos.proveedores}
-          loadingCatalogs={loadingCatalogs}
+          loadingCatalogs={
+            loadingCatalogs
+          }
           onCerrar={handleCloseModal}
           onGuardar={handleAddSubmit}
         />

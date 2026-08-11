@@ -32,7 +32,6 @@ abstract class AuthRepository {
     required String email,
     required String code,
     required String newPassword,
-    required String confirmPassword,
   });
 
   Future<AuthSession?> restoreSession();

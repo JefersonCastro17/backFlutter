@@ -307,7 +307,6 @@ class AuthController extends ChangeNotifier {
     required String email,
     required String code,
     required String newPassword,
-    required String confirmPassword,
   }) async {
     if (_isSubmitting) {
       return;
@@ -322,7 +321,6 @@ class AuthController extends ChangeNotifier {
         email: email,
         code: code,
         newPassword: newPassword,
-        confirmPassword: confirmPassword,
       );
       _suggestedEmail = email;
       _currentView = AuthView.login;

@@ -176,8 +176,8 @@ model usuarios {
   login_two_factor_expires   DateTime?            @db.DateTime(0)
   entrada_productos          entrada_productos[]
   salida_productos           salida_productos[]
-  roles                      roles                @relation(fields: [id_rol], references: [id])
-  tipos_identificacion       tipos_identificacion @relation(fields: [id_tipo_identificacion], references: [id])
+  roles                      roles                @relation(fields: [id_rol], references: [id], onUpdate: Restrict, map: "usuarios_ibfk_1")
+  tipos_identificacion       tipos_identificacion @relation(fields: [id_tipo_identificacion], references: [id], onUpdate: Restrict, map: "usuarios_ibfk_2")
   venta                      venta[]
 
   @@index([id_rol], map: "usuarios_ibfk_1")
@@ -214,5 +214,7 @@ model venta_productos {
 enum productos_estado {
   Disponible
   Agotado
+  En_tr_nsito   @map("En tránsito")
+  Descontinuado
   Deshabilitado
 }

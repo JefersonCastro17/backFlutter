@@ -8,7 +8,7 @@
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main.js",
+    "start:prod": "node dist/src/main",
     "seed:base": "node scripts/seed-base-system.js",
     "seed:catalog": "node scripts/seed-catalog-products.js",
     "prisma:migrate": "prisma migrate deploy --schema prisma/schema.prisma",
@@ -16,7 +16,8 @@
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema prisma/schema.prisma",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.9",
@@ -49,10 +50,11 @@
     "@types/nodemailer": "^7.0.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.3",
-    "jest": "^30.0.0",
+    "@types/supertest": "^7.2.1",
+    "jest": "^30.4.2",
     "prisma": "^6.19.0",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.2.5",
-    "ts-loader": "^9.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3"
@@ -68,6 +70,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/../test/setup-tests.ts"
+    ]
   }
 }

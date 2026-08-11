@@ -61,7 +61,6 @@ class _ProductFormModalState extends State<ProductFormModal> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.producto?.imagen.isNotEmpty == true ? widget.producto!.imagen : null;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -74,54 +73,56 @@ class _ProductFormModalState extends State<ProductFormModal> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.producto == null ? 'Nuevo Producto' : 'Editar Producto',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+              Text(
+                widget.producto == null ? 'Nuevo Producto' : 'Editar Producto',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 8),
               TextFormField(
                 controller: _nombreCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Nombre',
                   hintText: 'Ingrese el nombre del producto',
                 ),
-                validator: (v) => v!.trim().isEmpty ? 'Obligatorio' : null,
+                validator: (v) => v!.isEmpty ? 'Obligatorio' : null,
                 textInputAction: TextInputAction.next,
               ),
-              const SizedBox(height: 12),
               TextFormField(
                 controller: _precioCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Precio',
                   hintText: 'Ingrese el precio del producto',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Obligatorio';
-                  }
-                  if (double.tryParse(value.replaceAll(',', '.')) == null) {
-                    return 'Precio inválido';
-                  }
-                  return null;
-                },
               ),
-              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  hintText: 'Ingrese la descripción (opcional)',
+                ),
+                maxLines: 3,
+                minLines: 1,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
+              ),
+              DropdownButtonFormField<String>(
+                initialValue: _estado,
+                decoration: const InputDecoration(labelText: 'Estado'),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Disponible',
+                    child: Text('Disponible'),
+                  ),
+                  DropdownMenuItem(value: 'Agotado', child: Text('Agotado')),
+                ],
+                onChanged: (v) => setState(() => _estado = v!),
+              ),
+              const SizedBox(height: 8),
               DropdownButtonFormField<int>(
                 initialValue: _idCategoria,
                 decoration: const InputDecoration(labelText: 'Categoría'),
@@ -135,7 +136,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
                 validator: (v) => v == null ? 'Seleccione una categoría' : null,
                 onChanged: (v) => setState(() => _idCategoria = v!),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               DropdownButtonFormField<int>(
                 initialValue: _idProveedor,
                 decoration: const InputDecoration(labelText: 'Proveedor'),
@@ -146,87 +147,27 @@ class _ProductFormModalState extends State<ProductFormModal> {
                           child: Text(e.value),
                         ))
                     .toList(),
-                validator: (v) => v == null ? 'Seleccione un proveedor' : null,
+                validator: (v) =>
+                    v == null ? 'Seleccione un proveedor' : null,
                 onChanged: (v) => setState(() => _idProveedor = v!),
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _estado,
-                decoration: const InputDecoration(labelText: 'Estado'),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Disponible',
-                    child: Text('Disponible'),
-                  ),
-                  DropdownMenuItem(value: 'Agotado', child: Text('Agotado')),
-                  DropdownMenuItem(value: 'Deshabilitado', child: Text('Deshabilitado')),
-                ],
-                onChanged: (v) => setState(() => _estado = v!),
+              TextButton.icon(
+                icon: const Icon(Icons.image),
+                label: const Text('Subir Imagen'),
+                onPressed: _pickImage,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  hintText: 'Ingrese la descripción (opcional)',
-                ),
-                maxLines: 3,
-                minLines: 1,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Imagen del producto',
-                style: TextStyle(
-                  color: Colors.grey.shade800,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.image),
-                    label: const Text('Seleccionar imagen'),
-                    onPressed: _pickImage,
-                  ),
-                  const SizedBox(width: 12),
-                  if (_selectedImage != null || imageUrl != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        color: Colors.grey.shade100,
-                        child: _selectedImage != null
-                            ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                            : Image.network(
-                                imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.grey),
-                              ),
-                      ),
-                    ),
-                ],
-              ),
-              if (_selectedImage == null && imageUrl != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Usando imagen existente. Si no seleccionas otra, se conservará la actual.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                  ),
-                ),
+              if (_selectedImage != null)
+                Image.file(_selectedImage!, height: 80),
               if (_imageError != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     _imageError!,
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -234,7 +175,6 @@ class _ProductFormModalState extends State<ProductFormModal> {
                     onPressed: () => Navigator.pop(context),
                     child: const Text('Cancelar'),
                   ),
-                  const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: () {
                       final isNewProduct = widget.producto == null;
@@ -244,24 +184,21 @@ class _ProductFormModalState extends State<ProductFormModal> {
                       }
                       if (_formKey.currentState!.validate()) {
                         setState(() => _imageError = null);
-                        widget.onSave(
-                          {
-                            'nombre': _nombreCtrl.text.trim(),
-                            'precio': _precioCtrl.text.trim(),
-                            'estado': _estado,
-                            'descripcion': _descCtrl.text.trim(),
-                            'id_categoria': _idCategoria.toString(),
-                            'id_proveedor': _idProveedor.toString(),
-                          },
-                          _selectedImage,
-                        );
+                        widget.onSave({
+                          'nombre': _nombreCtrl.text,
+                          'precio': _precioCtrl.text,
+                          'estado': _estado,
+                          'descripcion': _descCtrl.text,
+                          'id_categoria': _idCategoria.toString(),
+                          'id_proveedor': _idProveedor.toString(),
+                        }, _selectedImage);
                       }
                     },
                     child: const Text('Guardar'),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -269,4 +206,3 @@ class _ProductFormModalState extends State<ProductFormModal> {
     );
   }
 }
-

@@ -74,10 +74,10 @@ function Recuperar() {
     }
 
     try {
-      // El payload sale del estado controlado (email, code, newPassword, confirmPassword).
+      // El payload sale del estado controlado (email, code, newPassword).
       const data = await httpRequest(API_ENDPOINTS.auth.resetPassword, {
         method: "POST",
-        data: { email, code, newPassword, confirmPassword }
+        data: { email, code, newPassword }
       });
 
       if (!data?.success) {

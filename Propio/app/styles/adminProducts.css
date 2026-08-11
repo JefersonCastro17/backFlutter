@@ -263,12 +263,12 @@
 }
 
 .products-btn--primary {
-  background: var(--color-principal);
+  background: #0a63d8;
   color: #fff;
 }
 
 .products-btn--primary:hover {
-  background: var(--color-principal-dark);
+  background: #0a53b2;
 }
 
 .products-btn--ghost,
@@ -347,7 +347,7 @@
   margin: 0;
   font-size: 1.2rem;
   font-weight: 800;
-  color: var(--color-principal);
+  color: #0a63d8;
 }
 
 .products-card__description {

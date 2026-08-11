@@ -9,14 +9,9 @@ import { formatPrice } from "../lib/services/productData";
 import "../styles/base.css";
 import "../styles/inventory.css";
 
-const isVisibleInCatalog = (producto) => {
-  const status = String(producto?.estado || "").trim().toLowerCase();
-  return status !== "deshabilitado" && status !== "no disponible" && status !== "no-disponible";
-};
-
 function InventoryPage() {
   const navigate = useNavigate();
-  const { logout, user } = useAuthContext();
+  const { logout } = useAuthContext();
 
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,12 +71,7 @@ function InventoryPage() {
           ? data
           : data?.data || data?.products || [];
 
-        const roleId = user ? Number(user.id_rol) : null;
-        const visibleProducts = roleId === 2
-          ? productsArray.filter(isVisibleInCatalog)
-          : productsArray;
-
-        setProducts(visibleProducts);
+        setProducts(productsArray);
       } catch (error) {
         if (error?.status === 401 || error?.status === 403) {
           handleUnauthorizedAccess();

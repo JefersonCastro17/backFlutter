@@ -1,0 +1,110 @@
+================================================================================
+          PLAN MAESTRO DE ASEGURAMIENTO DE CALIDAD (QA) - MERCAPLENO
+================================================================================
+Ecosistema Mercapleno: Backend NestJS + Frontend Flutter + MySQL & Docker
+
+--------------------------------------------------------------------------------
+1. ALCANCE Y OBJETIVOS DE CALIDAD
+--------------------------------------------------------------------------------
+El presente documento define la estrategia integral de Aseguramiento de Calidad (QA)
+para el ecosistema Mercapleno, compuesto por la API Backend (NestJS + Prisma ORM),
+la aplicación móvil/multiplataforma (Flutter) y la infraestructura de datos en
+contenedores Docker/MySQL.
+
+1.1 Objetivos Principales de Calidad:
+- Confiabilidad Transaccional: Garantizar consistencia e integridad estricta en el
+  inventario y ventas mediante bloqueos pesimistas de fila (FOR UPDATE) y transacciones ACID.
+- Seguridad y Autenticación: Verificar la protección de endpoints con JSON Web Tokens (JWT),
+  encriptación de contraseñas con Bcrypt, expiración de códigos OTP de correo y
+  control de acceso por roles (RBAC).
+- Usabilidad y Rendimiento Móvil: Asegurar tiempos de respuesta inferiores a 2 segundos
+  en la aplicación Flutter, un consumo óptimo online/offline y una interfaz fluida.
+- Cobertura de Automatización: Alcanzar una cobertura superior al 80% en pruebas unitarias
+  e integración en el Backend, y superar el 75% de cobertura en la App Flutter.
+
+--------------------------------------------------------------------------------
+2. NIVELES Y TIPOS DE PRUEBAS
+--------------------------------------------------------------------------------
+
+2.1 Pruebas Unitarias (Unit Testing):
+- Backend (NestJS / Jest): Validación estricta de DTOs con class-validator
+  (register.dto, create-product.dto, register-movement.dto), lógica de autenticación
+  (AuthService, hash de contraseñas, tokens OTP) y transformación de respuestas.
+- Frontend (Flutter / flutter_test): Lógica de dominio con fpdart (Either<Failure, Success>),
+  formateadores de datos y moneda (intl), y gestión de estado con Providers.
+
+2.2 Pruebas de Integración (Integration Testing):
+- Base de Datos & Prisma ORM: Ejecución de operaciones contra base de datos aislada
+  (.env.test) y verificación de consultas SQL agregadas para reportes en ReportsService.
+- Servicios Externos: Envío de correos mockeados mediante Nodemailer (EmailService) y
+  generación física de documentos PDF con pdfkit.
+
+2.3 Pruebas de API y Contrato (REST / Swagger):
+- Suite de Integración API: Validación de códigos de respuesta HTTP (200, 201, 400, 401,
+  403, 404, 422, 500) y verificación de contratos OpenAPI / Swagger (/api/docs).
+- Manejo de Excepciones: Respuesta estandarizada ante payloads corruptos, inyecciones de
+  código y accesos no autorizados.
+
+2.4 Pruebas Móviles y End-to-End (Flutter UI):
+- Registro y Verificación: Registro -> código OTP por correo -> activación -> inicio de sesión.
+- Gestión de Inventario: Escaneo de código de barras con mobile_scanner -> registro de
+  entrada/salida -> actualización de stock.
+- Flujo de Caja / Venta: Selección de productos -> cálculo de carrito -> selección de
+  método de pago -> confirmación de orden -> descuento de stock.
+- Seguridad Local: Autenticación biométrica con local_auth y almacenamiento seguro de
+  tokens con flutter_secure_storage.
+
+2.5 Pruebas de Concurrencia y Carga (Load & Stress Testing):
+- Simulación de Tráfico: Escenarios de prueba con k6 / JMeter simulando 100 usuarios
+  concurrentes comprando el último stock disponible.
+- Criterio de Cero Sobreventa: Verificación estricta del mecanismo FOR UPDATE en
+  sales.service.ts para impedir stock negativo o ventas duplicadas.
+
+--------------------------------------------------------------------------------
+3. MATRIZ DE COBERTURA POR MÓDULO
+--------------------------------------------------------------------------------
+[Módulo]               [Tipo de Prueba]     [Componente Objetivo]                 [Criterio de Éxito]
+------------------------------------------------------------------------------------------------------------------------
+Auth & Seguridad       Unitaria + API       auth.service.ts, jwt-auth.guard.ts    Contraseñas encriptadas, JWTs expirados rechazados (401)
+Users Admin            API + RBAC           users-admin.controller.ts             Restricción por rol de administrador, CRUD funcional
+Productos              Unitaria + API       products.service.ts, DTOs             Estados válidos (Disponible, Agotado), precios >= 0
+Inventario             Integración + SQL    inventory.service.ts                  Entradas/Salidas balanceadas y trazabilidad por usuario
+Ventas                 Integración + Carga  sales.service.ts                      Transacciones ACID, bloqueos FOR UPDATE, vaciado de carrito
+Reportes               Integración          reports.service.ts                    Consultas de KPI exactas y PDF estructurado
+Flutter UI             Widget + E2E         App Screens & Features                Diseño responsive, navegación fluida, manejo de red
+
+--------------------------------------------------------------------------------
+4. ROADMAP DE IMPLEMENTACIÓN DE QA
+--------------------------------------------------------------------------------
+Fase 1: Configuración de Infraestructura de Pruebas
+- Configurar .env.test e instancia aislada de base de datos MySQL (docker container mercapleno-db-test).
+- Normalizar semillas de datos e inicializadores (seed-base-system.js).
+- Establecer scripts unificados en package.json (test:unit, test:e2e, test:cov).
+
+Fase 2: Automatización Unitaria e Integración Backend
+- Implementar pruebas unitarias para DTOs, Guards y Pipes en NestJS.
+- Crear tests de integración transaccionales para SalesService e InventoryService.
+- Supervisar reporte de cobertura con jest --coverage hasta superar el 80%.
+
+Fase 3: Automatización de Pruebas en Flutter
+- Implementar Unit Tests en repositorios y fuentes de datos locales/remotas.
+- Crear Widget Tests para los componentes de interfaz clave (Login, Carrito, Productos).
+- Configurar Flutter Integration Test para la verificación E2E del flujo de compra.
+
+Fase 4: Pruebas de Carga, Concurrencia y Seguridad
+- Ejecutar scripts k6 simulando escenarios de alta demanda concurrente en ventas.
+- Realizar auditoría estática de código (SAST) y análisis de seguridad en endpoints REST.
+
+Fase 5: Integración Continua (Pipeline CI/CD)
+- Integrar ejecución automatizada en GitHub Actions / GitLab CI en cada Pull Request.
+- Bloquear despliegues en caso de fallos de pruebas o regresión de cobertura.
+
+--------------------------------------------------------------------------------
+5. CRITERIOS DE ACEPTACIÓN Y CIERRE (DEFINITION OF DONE)
+--------------------------------------------------------------------------------
+[✓] 0 Defectos Críticos o Bloqueantes (P1/P2) pendientes en el backlog.
+[✓] Cobertura de código Backend >= 80% y Flutter >= 75%.
+[✓] Pruebas de concurrencia aprobadas: No se presentan deadlocks ni inconsistencias de stock.
+[✓] Documentación Swagger (/api/docs) 100% sincronizada y validada contra la API real.
+[✓] Pipeline de Integración Continua (CI/CD) funcionando con estado exitoso.
+================================================================================

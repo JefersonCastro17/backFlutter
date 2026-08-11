@@ -11,11 +11,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -proot123 --silent || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -proot123 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-    restart: unless-stopped
+    restart: always
 
   backend:
     build:
@@ -38,7 +38,7 @@ services:
       SMTP_PORT: 587
       SMTP_SECURE: false
       SMTP_USER: mercapleno@gmail.com
-      SMTP_PASS: gtyw ijvu eryl dhng
+      SMTP_PASS: bjco veem vzie ubda
       SMTP_FROM_EMAIL: mercapleno@gmail.com
       APP_NAME: mercapleno
       EMAIL_VERIFICATION_TTL_MIN: 15
@@ -46,13 +46,12 @@ services:
       PASSWORD_RESET_TTL_MIN: 15
       INTERNAL_API_KEY: mercapleno123456789
       LOW_STOCK_THRESHOLD: 5
-      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "4000:4000"
-    restart: unless-stopped
 
   frontend:
     build:
@@ -62,7 +61,9 @@ services:
       - backend
     ports:
       - "5173:5173"
-    restart: unless-stopped
+    volumes:
+      - ../Propio:/app
+      # - /app/node_modules
 
 volumes:
   mysql_data:

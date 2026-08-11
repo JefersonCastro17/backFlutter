@@ -7,7 +7,7 @@ import Header from './components/ui/Header';
 import InventoryPage from './routes/InventoryPage'; 
 import CartPage from './routes/CartPage'; 			
 import TicketPage from './routes/TicketPage'; 	
-// Home route removed: root now redirects to login
+import Home from './routes/Home';
 import Login from './routes/Login'; 					 
 import Registro from './routes/Registro'; 			 
 import Verificar from './routes/Verificar';
@@ -58,9 +58,8 @@ function App() {
         return roleId === 3 ? "/catalogo" : "/usuarioC";
     };
 
-        const roleId = user ? Number(user.id_rol) : null;
-    // Mostrar el Header solo para clientes autenticados.
-    const showHeader = isAuthenticated && roleId === 3;
+        const showHeader = isAuthenticated && user && location.pathname !== '/usuarioC';
+
 
 	return (
 		<CartProvider>
@@ -68,8 +67,8 @@ function App() {
 			<Routes>
 				
 				{/*RUTAS PÚBLICAS */}       // aqui se pone los roles donde se validaron a la bd donde en el backend cada componente lo valida
-                <Route path="/" element={
-                    <Navigate to="/login" replace />
+				<Route path="/" element={
+                    isAuthenticated ? <Navigate to={getHomeRoute()} replace /> : <Home />
                 } />
 				<Route
                     path="/login"

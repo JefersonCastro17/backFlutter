@@ -1,9 +1,12 @@
 ﻿import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ description: 'Nombre del producto' })
   @IsString()
+  @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, {
+    message: 'El nombre del producto solo puede contener letras y espacios',
+  })
   nombre: string;
 
   @ApiProperty({ description: 'Precio del producto (mínimo 0)', minimum: 0 })

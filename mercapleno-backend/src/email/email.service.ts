@@ -55,23 +55,45 @@ export class EmailService {
     return envs.appName ? `"${envs.appName}" <${from}>` : from;
   }
 
-  async sendVerificationCode(email: string, code: string, ttlMin: number): Promise<void> {
-    const transporter = this.getTransporter();
-    const info = await transporter.sendMail({
-      from: this.fromAddress(),
-      to: email,
-      subject: `${envs.appName} - Codigo de verificacion`,
-      text: `Tu codigo de verificacion es ${code}. Vence en ${ttlMin} minutos.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <p>Tu codigo de verificacion es:</p>
-          <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
-          <p>Este codigo vence en ${ttlMin} minutos.</p>
-        </div>
-      `,
-    });
+  private async sendMailHelper(
+    mailOptions: nodemailer.SendMailOptions,
+    successLogMessage: string,
+  ): Promise<void> {
+    try {
+      const transporter = this.getTransporter();
+      const info = await transporter.sendMail(mailOptions);
+      this.logger.log(`${successLogMessage}. Message ID: ${info.messageId}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar correo: ${(error as Error).message}`, (error as Error).stack);
+      
+      if (envs.nodeEnv !== 'production') {
+        this.logger.warn(
+          `[DEVELOPMENT FALLBACK] No se pudo enviar el correo debido a un error SMTP, pero se procedió sin fallar. ` +
+          `Destinatario: ${mailOptions.to}, Asunto: ${mailOptions.subject}, Texto: ${mailOptions.text}`
+        );
+        return;
+      }
+      throw error;
+    }
+  }
 
-    this.logger.log(`Correo de verificacion enviado a ${email}. Message ID: ${info.messageId}`);
+  async sendVerificationCode(email: string, code: string, ttlMin: number): Promise<void> {
+    await this.sendMailHelper(
+      {
+        from: this.fromAddress(),
+        to: email,
+        subject: `${envs.appName} - Codigo de verificacion`,
+        text: `Tu codigo de verificacion es ${code}. Vence en ${ttlMin} minutos.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+            <p>Tu codigo de verificacion es:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
+            <p>Este codigo vence en ${ttlMin} minutos.</p>
+          </div>
+        `,
+      },
+      `Correo de verificacion enviado a ${email}`,
+    );
   }
 
   async sendLoginTwoFactorCode(
@@ -80,43 +102,43 @@ export class EmailService {
     ttlMin: number,
     roleName?: string,
   ): Promise<void> {
-    const transporter = this.getTransporter();
     const profileLabel = roleName?.trim() || 'usuario administrativo';
-    const info = await transporter.sendMail({
-      from: this.fromAddress(),
-      to: email,
-      subject: `${envs.appName} - Codigo de acceso`,
-      text: `Tu codigo de segundo factor para ${profileLabel} es ${code}. Vence en ${ttlMin} minutos.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <p>Recibimos un intento de inicio de sesion para tu cuenta de <strong>${profileLabel}</strong>.</p>
-          <p>Tu codigo de segundo factor es:</p>
-          <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
-          <p>Este codigo vence en ${ttlMin} minutos y solo sirve para completar este inicio de sesion.</p>
-        </div>
-      `,
-    });
-
-    this.logger.log(`Correo de segundo factor enviado a ${email}. Message ID: ${info.messageId}`);
+    await this.sendMailHelper(
+      {
+        from: this.fromAddress(),
+        to: email,
+        subject: `${envs.appName} - Codigo de acceso`,
+        text: `Tu codigo de segundo factor para ${profileLabel} es ${code}. Vence en ${ttlMin} minutos.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+            <p>Recibimos un intento de inicio de sesion para tu cuenta de <strong>${profileLabel}</strong>.</p>
+            <p>Tu codigo de segundo factor es:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
+            <p>Este codigo vence en ${ttlMin} minutos y solo sirve para completar este inicio de sesion.</p>
+          </div>
+        `,
+      },
+      `Correo de segundo factor enviado a ${email}`,
+    );
   }
 
   async sendPasswordResetCode(email: string, code: string, ttlMin: number): Promise<void> {
-    const transporter = this.getTransporter();
-    const info = await transporter.sendMail({
-      from: this.fromAddress(),
-      to: email,
-      subject: `${envs.appName} - Recuperar contrasena`,
-      text: `Tu codigo para recuperar contrasena es ${code}. Vence en ${ttlMin} minutos.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <p>Tu codigo para recuperar contrasena es:</p>
-          <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
-          <p>Este codigo vence en ${ttlMin} minutos.</p>
-        </div>
-      `,
-    });
-
-    this.logger.log(`Correo de recuperacion enviado a ${email}. Message ID: ${info.messageId}`);
+    await this.sendMailHelper(
+      {
+        from: this.fromAddress(),
+        to: email,
+        subject: `${envs.appName} - Recuperar contrasena`,
+        text: `Tu codigo para recuperar contrasena es ${code}. Vence en ${ttlMin} minutos.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+            <p>Tu codigo para recuperar contrasena es:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 2px;">${code}</div>
+            <p>Este codigo vence en ${ttlMin} minutos.</p>
+          </div>
+        `,
+      },
+      `Correo de recuperacion enviado a ${email}`,
+    );
   }
 
   async sendLowStockAlertToAdmins(alerts: LowStockAlert[], source: string): Promise<void> {
@@ -142,7 +164,6 @@ export class EmailService {
       return;
     }
 
-    const transporter = this.getTransporter();
     const timestamp = new Date().toLocaleString('es-CO', {
       year: 'numeric',
       month: 'long',
@@ -157,43 +178,42 @@ export class EmailService {
         ? alerts[0].message
         : `${alerts.length} productos quedaron con stock bajo.`;
 
-    const info = await transporter.sendMail({
-      from: this.fromAddress(),
-      to: recipientEmails.join(','),
-      subject: `${envs.appName} - Alerta de stock bajo`,
-      text: [
-        `Se detecto stock bajo tras ${sourceLabel}.`,
-        `Fecha: ${timestamp}.`,
-        '',
-        ...alerts.map((alert, index) => `${index + 1}. ${alert.message}`),
-      ].join('\n'),
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="margin-bottom: 8px;">Alerta de stock bajo</h2>
-          <p style="margin: 0 0 8px;">
-            Se detecto stock bajo tras <strong>${sourceLabel}</strong>.
-          </p>
-          <p style="margin: 0 0 16px; color: #64748b;">${timestamp}</p>
-          <p style="margin: 0 0 16px;">${summary}</p>
-          <ul style="padding-left: 18px; margin: 0;">
-            ${alerts
-              .map(
-                (alert) => `
-                  <li style="margin-bottom: 10px;">
-                    <strong>${alert.productName?.trim() || `Producto ID ${alert.productId}`}</strong><br />
-                    ${alert.message}<br />
-                    Umbral configurado: ${alert.threshold}
-                  </li>
-                `,
-              )
-              .join('')}
-          </ul>
-        </div>
-      `,
-    });
-
-    this.logger.log(
-      `Alerta de stock bajo enviada a ${recipientEmails.join(', ')} para ${alerts.length} producto(s). Message ID: ${info.messageId}`,
+    await this.sendMailHelper(
+      {
+        from: this.fromAddress(),
+        to: recipientEmails.join(','),
+        subject: `${envs.appName} - Alerta de stock bajo`,
+        text: [
+          `Se detecto stock bajo tras ${sourceLabel}.`,
+          `Fecha: ${timestamp}.`,
+          '',
+          ...alerts.map((alert, index) => `${index + 1}. ${alert.message}`),
+        ].join('\n'),
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2 style="margin-bottom: 8px;">Alerta de stock bajo</h2>
+            <p style="margin: 0 0 8px;">
+              Se detecto stock bajo tras <strong>${sourceLabel}</strong>.
+            </p>
+            <p style="margin: 0 0 16px; color: #64748b;">${timestamp}</p>
+            <p style="margin: 0 0 16px;">${summary}</p>
+            <ul style="padding-left: 18px; margin: 0;">
+              ${alerts
+                .map(
+                  (alert) => `
+                    <li style="margin-bottom: 10px;">
+                      <strong>${alert.productName?.trim() || `Producto ID ${alert.productId}`}</strong><br />
+                      ${alert.message}<br />
+                      Umbral configurado: ${alert.threshold}
+                    </li>
+                  `,
+                )
+                .join('')}
+            </ul>
+          </div>
+        `,
+      },
+      `Alerta de stock bajo enviada a ${recipientEmails.join(', ')} para ${alerts.length} producto(s)`,
     );
   }
 }

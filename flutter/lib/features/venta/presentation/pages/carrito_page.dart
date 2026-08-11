@@ -80,11 +80,6 @@ class CarritoPage extends StatelessWidget {
                               icon: const Icon(Icons.add_circle_outline, color: Colors.green),
                               onPressed: () => ventaProvider.updateQuantity(item.id, item.cantidad + 1),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
-                              onPressed: () => ventaProvider.updateQuantity(item.id, 0),
-                              tooltip: 'Eliminar producto',
-                            ),
                           ],
                         ),
                       );
@@ -211,7 +206,6 @@ class _ResumenPagoSectionState extends State<_ResumenPagoSection> {
               ventaResult: result,
               productosComprados: listaProductosTicket,
               totales: widget.ventaProvider.totals,
-              paymentMethod: widget.ventaProvider.selectedPaymentMethod,
             ),
           ),
         );

@@ -67,6 +67,11 @@ if (error) {
 
 const envVars = value as EnvVars;
 
+const normalizeSmtpValue = (value?: string): string | undefined => {
+  const normalized = value?.replace(/\s+/g, '').trim();
+  return normalized ? normalized : undefined;
+};
+
 const buildDatabaseUrl = (): string => {
   if (envVars.DATABASE_URL && envVars.DATABASE_URL.trim().length > 0) {
     return envVars.DATABASE_URL.trim();
@@ -97,8 +102,8 @@ export const envs = {
   smtpHost: envVars.SMTP_HOST?.trim() || undefined,
   smtpPort: envVars.SMTP_PORT,
   smtpSecure: envVars.SMTP_SECURE,
-  smtpUser: envVars.SMTP_USER?.trim() || undefined,
-  smtpPass: envVars.SMTP_PASS?.trim() || undefined,
+  smtpUser: normalizeSmtpValue(envVars.SMTP_USER),
+  smtpPass: normalizeSmtpValue(envVars.SMTP_PASS),
   smtpFromEmail: envVars.SMTP_FROM_EMAIL?.trim() || undefined,
   appName: envVars.APP_NAME,
   emailVerificationTtlMin: envVars.EMAIL_VERIFICATION_TTL_MIN,
