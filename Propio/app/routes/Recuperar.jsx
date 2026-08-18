@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../logo.svg";
 
 import "../styles/base.css";
 import "../styles/registro.css";
@@ -104,7 +103,7 @@ function Recuperar() {
       <header>
         <div className="header-container">
           <div className="logo-section">
-            <img src={logo} alt="Logo" className="logo-img" />
+            <img src="/images/placeholder.svg" alt="Logo" className="logo-img" />
             <h1 className="portal-title">Portal 2</h1>
           </div>
 

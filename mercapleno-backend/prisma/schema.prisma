@@ -200,6 +200,38 @@ model venta {
   @@index([id_metodo], map: "venta_ibfk_2")
 }
 
+enum cart_status {
+  active
+  ordered
+}
+
+model cart {
+  id         Int        @id @default(autoincrement())
+  id_usuario Int
+  status     cart_status @default(active)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  items cart_items[]
+
+  @@index([id_usuario], map: "cart_ibfk_user")
+}
+
+model cart_items {
+  id             Int      @id @default(autoincrement())
+  cart_id        Int
+  id_productos   Int
+  cantidad       Int
+  price_snapshot Decimal  @db.Decimal(12, 2)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  cart cart? @relation(fields: [cart_id], references: [id], onDelete: Cascade, map: "cart_items_ibfk_cart")
+
+  @@index([cart_id], map: "idx_cart_id")
+  @@index([id_productos], map: "idx_product_id")
+}
+
 model venta_productos {
   id_venta     Int
   id_productos Int

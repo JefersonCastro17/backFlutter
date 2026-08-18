@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import logo from "../logo.svg";
 
 import "../styles/base.css";
 import "../styles/registro.css";

@@ -23,16 +23,10 @@ export const useCart = () => {
   }, [cart]);
   // --------------------------------------------------------------------------
 
-  // Escucha eventos globales para limpiar el carrito (p.ej. logout)
+  // No vaciar el carrito al cerrar sesión; solo mantenerlo en localStorage.
   useEffect(() => {
     const handler = () => {
-      setCart([]);
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem('lastPurchasedCart');
-      } catch (e) {
-        // noop
-      }
+      // Se deja el carrito intacto para conservar la sesión del usuario local.
     };
 
     window.addEventListener('mercapleno:clearCart', handler);
@@ -53,14 +47,7 @@ export const useCart = () => {
   useEffect(() => {
     const onLogout = () => {
       sessionActiveRef.setInactive();
-      // Aseguramos limpiar el carrito también
-      setCart([]);
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem('lastPurchasedCart');
-      } catch (e) {
-        // noop
-      }
+      // Se conserva el carrito local cuando se cierra la sesión.
     };
 
     window.addEventListener('mercapleno:logout', onLogout);

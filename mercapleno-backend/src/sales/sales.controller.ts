@@ -40,6 +40,13 @@ export class SalesController {
     return this.salesService.getAvailableCategories();
   }
 
+  @Get('payment-methods')
+  @Public()
+  @ApiOperation({ summary: 'Obtener metodos de pago disponibles' })
+  getPaymentMethods() {
+    return this.salesService.getPaymentMethods();
+  }
+
   @Post('orders')
   @ApiOperation({ summary: 'Registrar orden de compra y descontar inventario' })
   createOrder(@Body() dto: CreateOrderDto, @CurrentUser() user?: AuthUser) {

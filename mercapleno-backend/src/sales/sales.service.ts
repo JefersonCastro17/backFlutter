@@ -134,6 +134,19 @@ export class SalesService {
     }));
   }
 
+  async getPaymentMethods() {
+    const [rows] = await this.db.query<any[]>(
+      'SELECT id_metodo, metodo_pago FROM metodo ORDER BY id_metodo ASC',
+    );
+
+    return (rows || []).map((row: any) => ({
+      id_metodo: String(row.id_metodo),
+      metodo_pago: String(row.metodo_pago ?? '').trim(),
+      value: String(row.id_metodo),
+      label: String(row.metodo_pago ?? row.id_metodo ?? 'Metodo de pago'),
+    }));
+  }
+
   async createOrder(dto: CreateOrderDto, userId?: number) {
     const idMetodo = this.resolvePaymentMethod(dto.id_metodo ?? dto.metodo_pago);
     if (!idMetodo) {

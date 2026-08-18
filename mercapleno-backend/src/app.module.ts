@@ -12,6 +12,7 @@ import { SalesModule } from './sales/sales.module';
 import { ReportsModule } from './reports/reports.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProveedoresModule } from './proveedores/proveedores.module';
+import { CartModule } from './cart/cart.module';
 import { ApiKeyMiddleware } from './common/logger/logger.middleware';
 
 
@@ -24,6 +25,7 @@ import { ApiKeyMiddleware } from './common/logger/logger.middleware';
     UsersAdminModule,
     ProductsModule,
     InventoryModule,
+    CartModule,
     SalesModule,
     ReportsModule,
     ProveedoresModule,
