@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Prisma, productos_estado } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -11,11 +11,19 @@ export class ProductsService {
 
   private handlePersistenceError(error: unknown, fallbackMessage: string): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error('ProductsService Prisma error:', error.code, error.meta ?? error.message);
       if (error.code === 'P2003') {
         throw new BadRequestException({
           message: 'La categoria o el proveedor seleccionados no existen en la base de datos',
         });
       }
+    }
+
+    if (error instanceof Error) {
+      console.error('ProductsService persistence error:', error.message);
+      console.error(error.stack);
+    } else {
+      console.error('ProductsService persistence error:', error);
     }
 
     throw new InternalServerErrorException({ message: fallbackMessage });
@@ -118,6 +126,10 @@ export class ProductsService {
         deleteStoredProductImage(uploadedImagePath);
       }
 
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       this.handlePersistenceError(error, 'No se pudo crear el producto');
     }
   }
@@ -157,8 +169,14 @@ export class ProductsService {
         },
       });
     } catch (error) {
+      console.error('ProductsService.update error:', error);
+
       if (uploadedImagePath) {
         deleteStoredProductImage(uploadedImagePath);
+      }
+
+      if (error instanceof HttpException) {
+        throw error;
       }
 
       this.handlePersistenceError(error, 'No se pudo actualizar el producto');
@@ -181,9 +199,41 @@ export class ProductsService {
       throw new NotFoundException({ message: 'Producto no encontrado' });
     }
 
-    await this.prisma.productos.delete({
-      where: { id_productos: id },
-    });
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.venta_productos.deleteMany({
+          where: { id_productos: id },
+        });
+
+        await tx.stock_actual.deleteMany({
+          where: { id_productos: id },
+        });
+
+        await tx.salida_productos.deleteMany({
+          where: { id_productos: id },
+        });
+
+        await tx.entrada_productos.deleteMany({
+          where: { id_productos: id },
+        });
+
+        await tx.devolver_productos.deleteMany({
+          where: { id_productos: id },
+        });
+
+        await tx.productos.delete({
+          where: { id_productos: id },
+        });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException({
+          message:
+            'No se puede eliminar el producto porque existen registros relacionados en stock, ventas o movimientos.',
+        });
+      }
+      throw new InternalServerErrorException({ message: 'No se pudo eliminar el producto' });
+    }
 
     deleteStoredProductImage(existing.imagen);
 
@@ -204,6 +254,7 @@ export class ProductsService {
 
     if (normalized === 'disponible') return productos_estado.Disponible;
     if (normalized === 'agotado') return productos_estado.Agotado;
+    if (normalized === 'deshabilitado' || normalized === 'no disponible') return productos_estado.Deshabilitado;
 
     throw new BadRequestException('Estado de producto invalido');
   }
