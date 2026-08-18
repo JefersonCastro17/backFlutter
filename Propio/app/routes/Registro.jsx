@@ -111,10 +111,12 @@ function Registro() {
     }
 
     try {
+      const { id_rol, ...payload } = formData;
+
       const data = await httpRequest(API_ENDPOINTS.auth.register, {
         method: "POST",
         data: {
-          ...formData,
+          ...payload,
           id_tipo_identificacion: Number(formData.id_tipo_identificacion)
         }
       });

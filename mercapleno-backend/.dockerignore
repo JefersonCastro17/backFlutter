@@ -10,5 +10,6 @@ tsconfig*.tsbuildinfo
 tester/
 reports/
 postman/
+coverage/
 *.md
 *.txt

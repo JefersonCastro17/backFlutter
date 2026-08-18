@@ -246,21 +246,23 @@ export class UsersAdminService {
     }
 
     const data: Prisma.usuariosUpdateInput = {
-      ...(dto.nombre !== undefined ? { nombre: dto.nombre } : {}),
-      ...(dto.apellido !== undefined ? { apellido: dto.apellido } : {}),
-      ...(dto.email !== undefined ? { email: dto.email } : {}),
-      ...(dto.direccion !== undefined ? { direccion: dto.direccion } : {}),
-      ...(dto.fecha_nacimiento !== undefined ? { fecha_nacimiento: new Date(dto.fecha_nacimiento) } : {}),
+      ...(dto.nombre !== undefined && String(dto.nombre).trim() !== '' ? { nombre: dto.nombre } : {}),
+      ...(dto.apellido !== undefined && String(dto.apellido).trim() !== '' ? { apellido: dto.apellido } : {}),
+      ...(dto.email !== undefined && String(dto.email).trim() !== '' ? { email: dto.email } : {}),
+      ...(dto.direccion !== undefined && String(dto.direccion).trim() !== '' ? { direccion: dto.direccion } : {}),
+      ...(dto.fecha_nacimiento !== undefined && String(dto.fecha_nacimiento).trim() !== ''
+        ? { fecha_nacimiento: new Date(dto.fecha_nacimiento) }
+        : {}),
       ...(dto.id_rol !== undefined ? { id_rol: dto.id_rol } : {}),
       ...(dto.id_tipo_identificacion !== undefined
         ? { id_tipo_identificacion: dto.id_tipo_identificacion }
         : {}),
-      ...(dto.numero_identificacion !== undefined
+      ...(dto.numero_identificacion !== undefined && String(dto.numero_identificacion).trim() !== ''
         ? { numero_identificacion: dto.numero_identificacion }
         : {}),
     };
 
-    if (dto.password !== undefined) {
+    if (dto.password !== undefined && String(dto.password).trim() !== '') {
       data.password = await bcrypt.hash(dto.password, 10);
     }
 
