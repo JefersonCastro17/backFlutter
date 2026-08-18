@@ -1,5 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { Public } from './decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,6 +15,18 @@ import { VerifyLoginCodeDto } from './dto/verify-login-code.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  private setAccessTokenCookie(res: Response, req: Request, token: string) {
+    const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: isHttps,
+      sameSite: isHttps ? 'none' : 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 2,
+    });
+  }
 
   @Get('document-types')
   @Public()
@@ -36,8 +49,15 @@ export class AuthController {
     summary: 'Iniciar sesion',
     description: 'Para usuarios comunes (rol 3): devuelve token directamente. Para admin/gerentes (rol 1-2): devuelve pendingToken + requiere verificar código 2FA con /verify-login-code',
   })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  
+  async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.login(dto);
+
+    if (result && 'token' in result && typeof result.token === 'string' && result.token) {
+      this.setAccessTokenCookie(res, req, result.token);
+    }
+
+    return result;
   }
 
   @Post('verify-login-code')
@@ -47,8 +67,14 @@ export class AuthController {
     summary: 'Verificar código de segundo factor (2FA)',
     description: 'Endpoint requerido para admin y gerentes. Valida el código enviado al email y devuelve el token de acceso. Solo se llama después de login si se recibió pendingToken.',
   })
-  verifyLoginCode(@Body() dto: VerifyLoginCodeDto) {
-    return this.authService.verifyLoginCode(dto);
+  async verifyLoginCode(@Body() dto: VerifyLoginCodeDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.verifyLoginCode(dto);
+
+    if (result && 'token' in result && typeof result.token === 'string' && result.token) {
+      this.setAccessTokenCookie(res, req, result.token);
+    }
+
+    return result;
   }
 
   @Post('verify-email')
@@ -83,7 +109,9 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cerrar sesion (lado cliente)' })
-  logout() {
+  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    res.clearCookie('access_token', { path: '/', secure: isHttps, sameSite: isHttps ? 'none' : 'lax' });
     return this.authService.logout();
   }
 }

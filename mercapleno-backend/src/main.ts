@@ -1,7 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'; //swagger
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { AppModule } from './app.module';
@@ -13,7 +14,7 @@ async function bootstrap() {
   const uploadsRoot = join(process.cwd(), 'uploads');
 
   mkdirSync(uploadsRoot, { recursive: true });
-
+  app.use(cookieParser());
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors({
@@ -29,15 +30,13 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder() //swagger
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Mercapleno API')
-    .setDescription('Documentación de la API de Mercapleno') //cambiar por una descripción más adecuada a la API
+    .setDescription('Documentación de la API de Mercapleno')
     .setVersion('2.0.0')
     .addBearerAuth()
     .addSecurity('x-api-key', {
@@ -48,14 +47,11 @@ async function bootstrap() {
     })
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig); //swagger 
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(envs.port);
-  // eslint-disable-next-line no-console
+  await app.listen(envs.port, '0.0.0.0');
   console.log(`Mercapleno backend corriendo en http://localhost:${envs.port}`);
-  // eslint-disable-next-line no-console
-  console.log(`Swagger: http://localhost:${envs.port}/api/docs`);
 }
 
 bootstrap();

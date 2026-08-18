@@ -11,12 +11,12 @@ export class UpdateUserAdminDto extends PartialType(CreateUserAdminDto) {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
   email?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsDateString()
+  @IsDateString({}, { message: 'La fecha de nacimiento debe tener el formato YYYY-MM-DD' })
   fecha_nacimiento?: string;
 
   @ApiPropertyOptional()

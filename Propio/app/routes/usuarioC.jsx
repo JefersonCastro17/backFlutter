@@ -25,7 +25,12 @@ export default function UsuarioC() {
   const [loadingDocumentTypes, setLoadingDocumentTypes] = useState(false);
   const [mostrar, setMostrar] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroId, setFiltroId] = useState("");
+  const [filtroDocumento, setFiltroDocumento] = useState("");
+  const [filtroRol, setFiltroRol] = useState("");
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
   const [toast, setToast] = useState(null);
   const [form, setForm] = useState(() => getEmptyForm());
 
@@ -57,11 +62,32 @@ export default function UsuarioC() {
     }
   }, [token, logout]);
 
+  const cargarRoles = useCallback(async () => {
+    if (!token) return;
+
+    setLoadingRoles(true);
+
+    try {
+      const data = await httpRequest(API_ENDPOINTS.admin.roles, {
+        auth: true,
+        token
+      });
+      setRoles(data?.roles || []);
+    } catch (error) {
+      if (manejarErrorAuth(error)) return;
+      console.error("Error al cargar roles:", error);
+      setRoles([]);
+    } finally {
+      setLoadingRoles(false);
+    }
+  }, [token, logout]);
+
   useEffect(() => {
     if (token) {
       cargar();
+      cargarRoles();
     }
-  }, [cargar, token]);
+  }, [cargar, cargarRoles, token]);
 
   useEffect(() => {
     let activo = true;
@@ -237,11 +263,26 @@ export default function UsuarioC() {
     return <span className="badge cliente">Cliente</span>;
   };
 
-  const usuariosFiltrados = usuarios.filter((u) =>
-    `${u.nombre} ${u.apellido} ${u.email}`
-      .toLowerCase()
-      .includes(busqueda.toLowerCase())
-  );
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const queryNombre = filtroNombre.trim().toLowerCase();
+    const queryId = filtroId.trim().toLowerCase();
+    const queryDocumento = filtroDocumento.trim().toLowerCase();
+
+    if (queryId && !String(u.id).toLowerCase().includes(queryId)) return false;
+
+    if (queryDocumento && !String(u.numero_identificacion || "").toLowerCase().includes(queryDocumento)) return false;
+
+    if (queryNombre) {
+      const nombreCompleto = `${u.nombre || ""} ${u.apellido || ""}`.toLowerCase();
+      const email = (u.email || "").toLowerCase();
+
+      if (!nombreCompleto.includes(queryNombre) && !email.includes(queryNombre)) return false;
+    }
+
+    if (filtroRol && String(u.id_rol) !== String(filtroRol)) return false;
+
+    return true;
+  });
 
   return (
     <div className="container">
@@ -253,12 +294,64 @@ export default function UsuarioC() {
             Nuevo Usuario
           </button>
 
-          <input
-            className="input-busqueda"
-            placeholder="Buscar por nombre o email..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
+          <button
+            className="btn-crear"
+            onClick={() => window.location.assign("/admin/proveedores")}
+            style={{ background: "#0B4A8B" }}
+          >
+            Gestionar Proveedores
+          </button>
+
+          <div className="controles-busqueda">
+            <input
+              className="input-busqueda"
+              placeholder="Buscar por nombre o email"
+              value={filtroNombre}
+              onChange={(e) => setFiltroNombre(e.target.value)}
+            />
+
+            <input
+              className="input-busqueda input-busqueda--small"
+              placeholder="ID"
+              value={filtroId}
+              onChange={(e) => setFiltroId(e.target.value)}
+            />
+
+            <input
+              className="input-busqueda input-busqueda--small"
+              placeholder="Documento"
+              value={filtroDocumento}
+              onChange={(e) => setFiltroDocumento(e.target.value)}
+            />
+
+            <select
+              className="select-filtro-rol"
+              value={filtroRol}
+              onChange={(e) => setFiltroRol(e.target.value)}
+              disabled={loadingRoles}
+            >
+              <option value="">Todos los roles</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.nombre}
+                </option>
+              ))}
+            </select>
+
+            {(filtroNombre || filtroId || filtroDocumento || filtroRol) && (
+              <button
+                className="btn-limpiar"
+                onClick={() => {
+                  setFiltroNombre("");
+                  setFiltroId("");
+                  setFiltroDocumento("");
+                  setFiltroRol("");
+                }}
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="tabla-container">
@@ -362,10 +455,17 @@ export default function UsuarioC() {
                   className="input"
                   value={form.id_rol}
                   onChange={(e) => setForm({ ...form, id_rol: e.target.value })}
+                  disabled={loadingRoles || roles.length === 0}
                 >
-                  <option value="1">Administrador</option>
-                  <option value="2">Empleado</option>
-                  <option value="3">Cliente</option>
+                  {roles.length > 0 ? (
+                    roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.nombre}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="3">Cliente</option>
+                  )}
                 </select>
               </div>
 

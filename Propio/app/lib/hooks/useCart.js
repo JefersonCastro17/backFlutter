@@ -23,6 +23,37 @@ export const useCart = () => {
   }, [cart]);
   // --------------------------------------------------------------------------
 
+  // No vaciar el carrito al cerrar sesión; solo mantenerlo en localStorage.
+  useEffect(() => {
+    const handler = () => {
+      // Se deja el carrito intacto para conservar la sesión del usuario local.
+    };
+
+    window.addEventListener('mercapleno:clearCart', handler);
+    return () => window.removeEventListener('mercapleno:clearCart', handler);
+  }, []);
+
+  // Bloquea el inicio de nuevos procesos de checkout si se detecta logout
+  const sessionActiveRef = (function () {
+    let active = true;
+    return {
+      isActive: () => active,
+      setInactive: () => {
+        active = false;
+      }
+    };
+  })();
+
+  useEffect(() => {
+    const onLogout = () => {
+      sessionActiveRef.setInactive();
+      // Se conserva el carrito local cuando se cierra la sesión.
+    };
+
+    window.addEventListener('mercapleno:logout', onLogout);
+    return () => window.removeEventListener('mercapleno:logout', onLogout);
+  }, []);
+
 
   // --- FUNCIONES DE MANEJO DEL CARRITO ---
   const addToCart = (product) => {
@@ -44,13 +75,19 @@ export const useCart = () => {
 
   const setItemQuantity = (productId, newQuantity) => {
     setCart(prevCart => {
-        if (newQuantity <= 0) {
-            // Eliminar producto si la cantidad es 0 o menos
-            return prevCart.filter(item => item.id !== productId);
-        }
-        return prevCart.map(item => 
-            item.id === productId ? { ...item, cantidad: newQuantity } : item
-        );
+      const nextQuantity = Number(newQuantity);
+
+      if (!Number.isFinite(nextQuantity)) {
+        return prevCart;
+      }
+
+      if (nextQuantity <= 0) {
+        return prevCart.filter(item => item.id !== productId);
+      }
+
+      return prevCart.map(item =>
+        item.id === productId ? { ...item, cantidad: nextQuantity } : item
+      );
     });
   };
 
@@ -78,6 +115,10 @@ export const useCart = () => {
   // --- FUNCIÓN DE CHECKOUT (CORREGIDA: ACEPTA id_metodo) ---
   //CAMBIO CLAVE 1: Ahora acepta el id_metodo como parámetro
   const processCheckout = async (id_metodo) => { 
+    if (!sessionActiveRef.isActive()) {
+      throw new Error('Sesion cerrada. Checkout cancelado.');
+    }
+
     if (cart.length > 0) {
         
         // 1. Prepara los datos para el backend
@@ -90,8 +131,10 @@ export const useCart = () => {
             // CAMBIO CLAVE 2: Incluye el id_metodo recibido
             id_metodo: id_metodo 
         };
-
         try {
+            if (!sessionActiveRef.isActive()) {
+              throw new Error('Sesion cerrada antes de enviar la orden.');
+            }
             // 2. Envía la orden al API
             const result = await sendOrder(orderData); 
             

@@ -122,7 +122,7 @@
     margin: 30px auto 0;
     padding: 10px 0;
     text-align: center;
-    background-color: #FFA500;
+    background-color: var(--color-acento);
     color: white;
     border: none;
     border-radius: 4px;
@@ -133,7 +133,7 @@
 }
 
 .volver-catalogo-btn:hover {
-    background-color: #FF8C00;
+    background-color: var(--color-acento-dark);
 }
 
 .ticket-actions {

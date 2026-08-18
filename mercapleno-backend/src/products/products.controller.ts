@@ -37,6 +37,7 @@ const productMultipartSchema = {
   type: 'object',
 
   properties: {
+<<<<<<< HEAD
     nombre: {
       type: 'string',
     },
@@ -71,6 +72,15 @@ const productMultipartSchema = {
       type: 'string',
       format: 'binary',
     },
+=======
+    nombre: { type: 'string' },
+    precio: { type: 'number' },
+    id_categoria: { type: 'integer' },
+    id_proveedor: { type: 'integer' },
+    descripcion: { type: 'string', nullable: true },
+    estado: { type: 'string', enum: ['Disponible', 'Agotado', 'Deshabilitado'] },
+    imagen: { type: 'string', format: 'binary' },
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
   },
 
   required: [
@@ -98,6 +108,33 @@ export class ProductsController {
   })
   getCatalogs() {
     return this.productsService.getCatalogs();
+  }
+
+  @Get('proveedores')
+  @ApiOperation({ summary: 'Listar proveedores' })
+  findProveedores() {
+    return this.productsService.findProveedores();
+  }
+
+  @Post('proveedores')
+  @ApiOperation({ summary: 'Crear proveedor' })
+  createProveedor(@Body() dto: { nombre?: string; apellido?: string; telefono?: string }) {
+    return this.productsService.createProveedor(dto);
+  }
+
+  @Put('proveedores/:id')
+  @ApiOperation({ summary: 'Actualizar proveedor' })
+  updateProveedor(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { nombre?: string; apellido?: string; telefono?: string },
+  ) {
+    return this.productsService.updateProveedor(id, dto);
+  }
+
+  @Delete('proveedores/:id')
+  @ApiOperation({ summary: 'Eliminar proveedor' })
+  removeProveedor(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.removeProveedor(id);
   }
 
   @Get()
@@ -184,3 +221,5 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
+
+

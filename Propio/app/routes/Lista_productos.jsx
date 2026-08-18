@@ -22,6 +22,7 @@ const EMPTY_CATALOGS = {
   proveedores: []
 };
 
+const DISABLED_PRODUCT_STATUS = "Deshabilitado";
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 
 function createProductFormState(producto = {}) {
@@ -287,6 +288,7 @@ function ProductModal({
               >
                 <option value="Disponible">Disponible</option>
                 <option value="Agotado">Agotado</option>
+<<<<<<< HEAD
                 <option value="Deshabilitado">
                   Deshabilitado
                 </option>
@@ -295,6 +297,11 @@ function ProductModal({
               <small className="help-text">
                 Disponible / Agotado / Deshabilitado
               </small>
+=======
+                <option value="Deshabilitado">Deshabilitado</option>
+              </select>
+              <small className="help-text">Disponible / Agotado / Deshabilitado</small>
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
             </div>
 
             <div className="products-modal__field products-modal__field--full">
@@ -416,6 +423,7 @@ function ProductRow({
       <td>{formatPrice(producto.precio)}</td>
 
       <td>
+<<<<<<< HEAD
         {producto.categoria_nombre || producto.id_categoria}
       </td>
 
@@ -434,6 +442,9 @@ function ProductRow({
               : "is-ready"
           }`}
         >
+=======
+        <span className={`products-status ${String(producto.estado).toLowerCase() === "agotado" ? "is-empty" : String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" : "is-ready"}`}>
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
           {producto.estado}
         </span>
       </td>
@@ -449,6 +460,7 @@ function ProductRow({
           >
             Editar
           </button>
+<<<<<<< HEAD
 
           <button
             type="button"
@@ -462,6 +474,10 @@ function ProductRow({
             {estaDeshabilitado
               ? "Habilitar"
               : "Deshabilitar"}
+=======
+          <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
+            Deshabilitar
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
           </button>
 
           <button
@@ -505,6 +521,7 @@ function ProductCard({
           <p>ID {producto.id_productos}</p>
 
           <h3>{producto.nombre}</h3>
+<<<<<<< HEAD
 
           <span
             className={`products-status ${
@@ -516,6 +533,13 @@ function ProductCard({
                 : "is-ready"
             }`}
           >
+=======
+          <span className={`products-status ${
+          String(producto.estado).toLowerCase() === "agotado" ? "is-empty" :
+          String(producto.estado).toLowerCase() === "deshabilitado" ? "is-disabled" :
+          "is-ready"
+        }}`}>
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
             {producto.estado}
           </span>
         </div>
@@ -554,6 +578,7 @@ function ProductCard({
         >
           Editar
         </button>
+<<<<<<< HEAD
 
         <button
           type="button"
@@ -567,6 +592,10 @@ function ProductCard({
           {estaDeshabilitado
             ? "Habilitar"
             : "Deshabilitar"}
+=======
+        <button type="button" className="products-btn products-btn--danger" onClick={() => onDelete(producto.id_productos)}>
+          Desabilitar
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
         </button>
 
         <button
@@ -727,6 +756,7 @@ export default function Lista_productos() {
         .trim()
         .toLowerCase();
 
+<<<<<<< HEAD
       const matchesStatus =
         (statusFilter === "todos" &&
           productStatus !== "deshabilitado") ||
@@ -740,11 +770,25 @@ export default function Lista_productos() {
 
         (statusFilter === "deshabilitado" &&
           productStatus === "deshabilitado");
+=======
+      const productStatus = String(producto.estado || "").trim().toLowerCase();
+      const matchesStatus =
+        statusFilter === "todos"
+          ? true
+          : statusFilter === "disponible"
+          ? productStatus === "disponible"
+          : statusFilter === "agotado"
+          ? productStatus === "agotado"
+          : statusFilter === "deshabilitado"
+          ? productStatus === "deshabilitado"
+          : true;
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
 
       return matchesSearch && matchesStatus;
     });
   }, [productos, searchTerm, statusFilter]);
 
+<<<<<<< HEAD
   /*
    * DESHABILITAR / HABILITAR PRODUCTO
    *
@@ -780,13 +824,22 @@ export default function Lista_productos() {
       ),
       10
     );
+=======
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Deshabilitar producto. No se elimina, solo se oculta. ¿Continuar?`)) return;
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
 
     if (Number.isNaN(idNumerico)) {
+<<<<<<< HEAD
       alert("Error: ID de producto no válido.");
+=======
+      alert("Error: ID de producto no valido para la deshabilitacion.");
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
       return;
     }
 
     try {
+<<<<<<< HEAD
       /*
        * Enviamos los datos completos porque el UpdateProductDto
        * puede requerir los campos principales del producto.
@@ -846,6 +899,29 @@ export default function Lista_productos() {
           ? "Producto deshabilitado correctamente."
           : "Producto habilitado correctamente."
       );
+=======
+      // Send a JSON body when only updating the `estado` field.
+      // Using JSON avoids multipart boundaries for a simple update
+      // and is supported by the backend controller.
+      const payload = { estado: DISABLED_PRODUCT_STATUS };
+
+      await httpRequest(`${API_ENDPOINTS.products.crud}/${idNumerico}`, {
+        method: "PUT",
+        data: payload,
+        auth: true,
+        token
+      });
+
+      setProductos((current) =>
+        current.map((producto) =>
+          producto.id_productos === idNumerico ? { ...producto, estado: DISABLED_PRODUCT_STATUS } : producto
+        )
+      );
+      // Refresh from server to ensure consistent state
+      await fetchProductos();
+
+      alert(`Producto ${id} deshabilitado correctamente.`);
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
     } catch (err) {
       if (handleAuthError(err)) return;
 
@@ -1078,6 +1154,7 @@ export default function Lista_productos() {
                 )
               }
             >
+<<<<<<< HEAD
               <option value="todos">
                 Productos activos
               </option>
@@ -1093,6 +1170,12 @@ export default function Lista_productos() {
               <option value="deshabilitado">
                 Productos deshabilitados
               </option>
+=======
+               <option value="todos">Todos</option>
+               <option value="disponible">Disponibles</option>
+               <option value="agotado">Agotados</option>
+               <option value="deshabilitado">Deshabilitados</option>
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
             </select>
           </div>
 
@@ -1151,6 +1234,7 @@ export default function Lista_productos() {
           filteredProducts.length > 0 ? (
             <>
               <div className="products-warning">
+<<<<<<< HEAD
                 <strong>Importante:</strong> al
                 deshabilitar un producto no se
                 elimina de la base de datos. El
@@ -1159,6 +1243,10 @@ export default function Lista_productos() {
                 habilitarse posteriormente.
               </div>
 
+=======
+                <strong>Atencion:</strong> al deshabilitar un producto, este seguira registrado en el sistema pero se ocultara en otras tablas de venta e inventario. No se elimina, y si el producto tiene registros relacionados puede afectar la trazabilidad.
+              </div>
+>>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
               <div className="products-table-wrap">
                 <table className="products-table">
                   <thead>

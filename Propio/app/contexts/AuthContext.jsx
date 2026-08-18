@@ -2,7 +2,6 @@
 
 // NOTA: Se eliminó 'useEffect' de la importación ya que no se usa en esta versión robusta.
 import React, { createContext, useState, useContext } from 'react';
-import { encryptToken, decryptToken, encryptData, decryptData } from '../lib/encryption'; 
 
 const AuthContext = createContext(null);
 
@@ -18,35 +17,26 @@ export const useAuthContext = () => {
 // Función de limpieza para asegurar un estado inicial válido
 // Se mantiene fuera del componente para que React solo la ejecute una vez.
 const getInitialAuthState = () => {
-    const storedEncryptedToken = localStorage.getItem('token');
     const storedEncryptedUser = localStorage.getItem('user');
-    let storedToken = null;
     let storedUser = null;
 
-    // Descifrar token si existe
-    if (storedEncryptedToken) {
-        try {
-            storedToken = decryptToken(storedEncryptedToken);
-        } catch (e) {
-            console.error("Error al descifrar token de localStorage:", e);
-        }
-    }
-
-    // Descifrar usuario si existe
     if (storedEncryptedUser) {
         try {
-            storedUser = decryptData(storedEncryptedUser);
-        } catch (e) {
-            console.error("Error al descifrar usuario de localStorage:", e);
+            storedUser = JSON.parse(storedEncryptedUser);
+        } catch (_error) {
+            try {
+                storedUser = JSON.parse(atob(storedEncryptedUser));
+            } catch (_innerError) {
+                storedUser = null;
+            }
         }
     }
 
-    //CLAVE: La autenticación solo es válida si AMBOS están presentes y son válidos.
-    if (storedUser && storedToken) {
-        return { user: storedUser, token: storedToken };
+    if (storedUser) {
+        localStorage.removeItem('token');
+        return { user: storedUser, token: null };
     }
 
-    // Si falta alguno o los datos están corruptos, limpiamos el localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     return { user: null, token: null };
@@ -60,37 +50,45 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Estado Derivado para claridad
     const user = authState.user;
-    const token = authState.token;
+    const token = authState.token ?? (user ? 'cookie' : null);
     const isAuthenticated = !!user && !!token;
 
-    // Función de LOGIN: Guarda los datos de la sesión y en localStorage (cifrados)
-    const login = (userData, authToken) => {
+    const normalizeUser = (userData) => {
+        if (!userData || typeof userData !== 'object') return userData;
+        return {
+            ...userData,
+            id_rol: userData.id_rol !== undefined ? Number(userData.id_rol) : userData.id_rol,
+        };
+    };
+
+    // Función de LOGIN: Guarda los datos de la sesión y el usuario en localStorage
+    const login = (userData) => {
+        const normalizedUser = normalizeUser(userData);
+
         // Guardar en el estado React
-        setAuthState({ user: userData, token: authToken });
-        
-        // Persistir en localStorage cifrados
-        const encryptedToken = encryptToken(authToken);
-        const encryptedUser = encryptData(userData);
-        
-        if (encryptedToken && encryptedUser) {
-            localStorage.setItem('token', encryptedToken);
-            localStorage.setItem('user', encryptedUser);
-            console.log('✓ Token y usuario cifrados en localStorage');
-        } else {
-            console.warn('⚠ No se pudieron cifrar los datos, guardando sin cifrar');
-            localStorage.setItem('user', JSON.stringify(userData));
-            localStorage.setItem('token', authToken);
-        }
+        setAuthState({ user: normalizedUser, token: null });
+
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
     };
 
     // Función de LOGOUT: Limpia los datos de la sesión y en localStorage
     const logout = () => {
         // Limpiar el estado React
         setAuthState({ user: null, token: null });
-        
-        // Limpiar localStorage inmediatamente
+
+        // Limpiar localStorage - solo sesión, SIN limpiar el carrito
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+
+        // El carrito se preserva después del logout (requisito funcional)
+        // NO limpiamos: productosCarrito, lastPurchasedCart, cart
+
+        // Notificar a cualquier listener sobre logout (pero no de clearCart)
+        try {
+            window.dispatchEvent(new CustomEvent('mercapleno:logout'));
+        } catch (e) {
+            // Silencioso si no hay window (SSR) o falla el dispatch
+        }
     };
 
     // Funciones de utilidad (mejoradas para acceder a IDs correctos)

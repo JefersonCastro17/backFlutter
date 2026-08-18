@@ -1,4 +1,4 @@
-﻿import { ApiProperty } from '@nestjs/swagger';
+﻿import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator';
 
 export class RegisterMovementDto {
@@ -16,11 +16,12 @@ export class RegisterMovementDto {
   @Min(1)
   cantidad: number;
 
-  @ApiProperty({ description: 'ID de documento (ej: CC, RUC, 01, 02)' })
+  @ApiPropertyOptional({ description: 'ID de documento (ej: CC, RUC, 01, 02). Si no se envía, el backend usará ND.' })
+  @IsOptional()
   @IsString()
   @MaxLength(5)
   @Matches(/^[A-Z0-9]+$/, { message: 'El ID de documento solo puede contener letras mayúsculas y números' })
-  id_documento: string;
+  id_documento?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

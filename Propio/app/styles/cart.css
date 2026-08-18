@@ -58,7 +58,7 @@
 .cart-page__badge strong {
   display: block;
   margin-top: 2px;
-  color: #0a63d8;
+  color: var(--color-principal);
   font-size: 24px;
   line-height: 1;
 }
@@ -221,7 +221,7 @@
 }
 
 .cart-btn--primary {
-  background: #0a63d8;
+  background: var(--color-principal);
   color: #fff;
 }
 

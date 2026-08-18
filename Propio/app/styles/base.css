@@ -5,24 +5,27 @@
 
 /* === 1. VARIABLES CSS (Unificación de colores principales) === */
 :root {
-  /* Variables de Ventas (global.css) */
-  --color-principal: #0066CC; /* Azul oscuro */
-  --color-acento: #F9B300; /* Amarillo/Naranja (Botones) */
+  /* Variables de Ventas y Aplicación */
+  --color-principal: #0B4A8B; /* Azul principal unificado */
+  --color-principal-dark: #123C63;
+  --color-acento: #F59E0B; /* Naranja/acento */
+  --color-acento-dark: #D97706;
   --color-secundario: #3faac5;
-  --color-exito: rgb(91, 228, 91);
-  --color-fondo-base: #e5e7eb; /* Fondo de Ventas */
+  --color-exito: #22c55e;
+  --color-peligro: #dc2626;
+  --color-fondo-base: #eef4ff;
   --color-texto-principal: #0f1720;
   --color-texto-secundario: #5d6b6a;
-  
-  /* Variables de Login/Registro (Colores similares a #0066CC y #FFA500) */
-  --color-portal-header: #0066CC;
-  --color-portal-acento: #FFA500;
+
+  /* Variables de Login/Registro */
+  --color-portal-header: var(--color-principal);
+  --color-portal-acento: var(--color-acento);
   --color-portal-footer: #3d4f5c;
 
-  /* Variables de CRUD (usuarioC.css) */
-  --color-crud-primary: #667eea; /* Morado/Azul */
-  --color-crud-dark: #1a1d2e; /* Sidebar oscuro */
-  --color-crud-fondo: #f0f2f5; /* Fondo del CRUD */
+  /* Variables de CRUD y componentes administrativos */
+  --color-crud-primary: var(--color-principal);
+  --color-crud-dark: #1a1d2e;
+  --color-crud-fondo: #f0f2f5;
 }
 
 /* === 2. RESET Y BASE === */

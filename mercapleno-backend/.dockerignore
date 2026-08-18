@@ -3,4 +3,13 @@ dist
 .git
 .env
 .env.docker
+.env.example
 npm-debug.log
+tsconfig*.tsbuildinfo
+.tmp-local-backend*.log
+tester/
+reports/
+postman/
+coverage/
+*.md
+*.txt

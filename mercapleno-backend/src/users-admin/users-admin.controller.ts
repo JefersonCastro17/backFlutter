@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { CreateUserAdminDto } from './dto/create-user-admin.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
@@ -15,8 +15,20 @@ export class UsersAdminController {
 
   @Get()
   @ApiOperation({ summary: 'Listar usuarios administrativos' })
-  findAll() {
-    return this.usersAdminService.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.usersAdminService.findAll(search);
+  }
+
+  @Get('roles')
+  @ApiOperation({ summary: 'Listar roles disponibles' })
+  findRoles() {
+    return this.usersAdminService.findRoles();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Consultar usuario administrativo por ID' })
+  findOne(@Param('id') id: string) {
+    return this.usersAdminService.findOne(id);
   }
 
   @Post()

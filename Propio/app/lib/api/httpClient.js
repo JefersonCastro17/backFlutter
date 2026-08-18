@@ -1,5 +1,4 @@
 import { API_URL, INTERNAL_API_KEY } from "../config/env";
-import { decryptToken } from "../encryption";
 
 function normalizePath(path = "") {
   if (!path) return "";
@@ -16,18 +15,6 @@ function extractErrorMessage(payload, fallback) {
     payload.details ||
     fallback
   );
-}
-
-function getDecodedToken() {
-  try {
-    const encryptedToken = localStorage.getItem("token");
-    if (!encryptedToken) return null;
-    return decryptToken(encryptedToken);
-  } catch (error) {
-    console.error("Error al descifrar token:", error);
-    localStorage.removeItem("token");
-    return null;
-  }
 }
 
 export function buildApiUrl(path = "") {
@@ -61,7 +48,7 @@ export async function httpRequest(path, options = {}) {
   const hasPayload = allowBody && data !== undefined && data !== null;
 
   if (auth) {
-    const authToken = token || getDecodedToken();
+    const authToken = token;
     if (authToken) {
       requestHeaders.Authorization = `Bearer ${authToken}`;
     }
@@ -78,6 +65,7 @@ export async function httpRequest(path, options = {}) {
   const response = await fetch(buildApiUrl(normalizedPath), {
     method: normalizedMethod,
     headers: requestHeaders,
+    credentials: "include",
     body: hasPayload ? (isFormData ? data : JSON.stringify(data)) : undefined
   });
 

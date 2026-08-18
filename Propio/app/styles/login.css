@@ -44,7 +44,7 @@ header {
     transition: all 0.3s ease;
 }
 .nav-btn:hover {
-    background-color: #FF8C00;
+    background-color: var(--color-acento-dark);
 }
 /* --- FIN HEADER DE PORTAL --- */
 

@@ -1,16 +1,25 @@
 ﻿import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsInt, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsInt, IsOptional, IsString, Matches, MinLength, IsNotEmpty } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty()
+  @IsNotEmpty({message: 'El nombre es obligatorio'})
   @IsString()
+  @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, {  /*Es como amazon todos los productos de la a "a" la "z"*/
+    message: 'El nombre solo puede contener letra',
+  })
   nombre: string;
 
   @ApiProperty()
+  @IsNotEmpty({message: 'El apellido es obligatorio'})
   @IsString()
+  @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, { 
+    message: 'El apellido solo puede contener letra',
+  })
   apellido: string;
 
   @ApiProperty()
+  @IsNotEmpty({message: 'El email es obligatorio'})
   @IsEmail()
   email: string;
 
@@ -34,11 +43,6 @@ export class RegisterDto {
   @ApiProperty({ example: '2000-01-01' })
   @IsDateString()
   fecha_nacimiento: string;
-
-  @ApiProperty({ required: false, default: 3 })
-  @IsOptional()
-  @IsInt()
-  id_rol?: number = 3;
 
   @ApiProperty()
   @IsInt()

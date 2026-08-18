@@ -1,4 +1,4 @@
-﻿import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { MysqlModule } from './common/database/mysql.module';
 import { AuthModule } from './auth/auth.module';
@@ -11,6 +11,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { SalesModule } from './sales/sales.module';
 import { ReportsModule } from './reports/reports.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProveedoresModule } from './proveedores/proveedores.module';
+import { CartModule } from './cart/cart.module';
 import { ApiKeyMiddleware } from './common/logger/logger.middleware';
 
 
@@ -23,8 +25,10 @@ import { ApiKeyMiddleware } from './common/logger/logger.middleware';
     UsersAdminModule,
     ProductsModule,
     InventoryModule,
+    CartModule,
     SalesModule,
     ReportsModule,
+    ProveedoresModule,
   ],
   providers: [
     {
@@ -43,9 +47,9 @@ export class AppModule implements NestModule {
     consumer
       .apply(ApiKeyMiddleware)
       .forRoutes(
-  { path: 'sales/reports', method: RequestMethod.ALL },
-  { path: 'admin/users', method: RequestMethod.ALL },
-)
+        { path: 'sales/reports', method: RequestMethod.ALL },
+        { path: 'admin/users', method: RequestMethod.ALL },
+      );
 
   }
 }

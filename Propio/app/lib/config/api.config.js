@@ -10,11 +10,13 @@ export const API_ENDPOINTS = {
     resetPassword: "/api/auth/reset-password"
   },
   admin: {
-    users: "/api/admin/users"
+    users: "/api/admin/users",
+    roles: "/api/admin/users/roles"
   },
   products: {
     crud: "/api/productos",
-    catalogs: "/api/productos/catalogos"
+    catalogs: "/api/productos/catalogos",
+    proveedoresAdmin: "/api/proveedores/admin"
   },
   sales: {
     base: "/api/sales",

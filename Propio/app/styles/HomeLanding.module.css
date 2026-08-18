@@ -1,8 +1,8 @@
 .page {
-  --home-blue: #0066cc;
-  --home-blue-dark: #0f4f96;
+  --home-blue: var(--color-principal, #0B4A8B);
+  --home-blue-dark: var(--color-principal-dark, #123C63);
   --home-blue-soft: #eef5ff;
-  --home-yellow: #f9b300;
+  --home-yellow: var(--color-acento, #F59E0B);
   --home-yellow-soft: #fff4d2;
   --home-ink: #22304a;
   --home-muted: #6a7687;
@@ -27,7 +27,7 @@
   min-height: 42px;
   padding: 0 16px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--home-blue), #1b7be0);
+  background: linear-gradient(135deg, var(--home-blue), var(--home-blue-dark));
   color: #ffffff;
   font-size: 0.92rem;
   font-weight: 700;
@@ -110,14 +110,14 @@
 }
 
 .buttonPrimary {
-  background: linear-gradient(135deg, var(--home-blue), #1b7be0);
+  background: linear-gradient(135deg, var(--home-blue), var(--home-blue-dark));
   color: #ffffff;
 }
 
 .buttonPortal {
-  background: linear-gradient(135deg, #f9b300, #ff9f1a);
+  background: linear-gradient(135deg, var(--home-yellow), var(--color-acento-dark));
   color: #ffffff;
-  box-shadow: 0 10px 22px rgba(249, 179, 0, 0.24);
+  box-shadow: 0 10px 22px rgba(245, 158, 11, 0.24);
 }
 
 .buttonGhost {
@@ -198,7 +198,7 @@
   padding: 22px;
   border-radius: 20px;
   background: linear-gradient(180deg, var(--home-yellow-soft) 0%, #ffffff 100%);
-  border: 1px solid rgba(249, 179, 0, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .heroImage {

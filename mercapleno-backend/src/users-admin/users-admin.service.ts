@@ -36,6 +36,13 @@ export class UsersAdminService {
   ): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
+        const target = String(error.meta?.target || '');
+        if (target.includes('email')) {
+          throw new ConflictException({ success: false, message: 'El correo electronico ya esta registrado.' });
+        }
+        if (target.includes('numero_identificacion')) {
+          throw new ConflictException({ success: false, message: 'El numero de identificacion ya esta registrado.' });
+        }
         throw new ConflictException({ success: false, message: 'Ya existe un usuario con esos datos' });
       }
 
@@ -47,8 +54,22 @@ export class UsersAdminService {
     throw new InternalServerErrorException({ success: false, message: fallbackMessage });
   }
 
-  async findAll() {
+  async findAll(search?: string) {
+    const where: Prisma.usuariosWhereInput = {};
+
+    if (search) {
+      const cleanSearch = search.trim();
+      where.OR = [
+        { nombre: { contains: cleanSearch } },
+        { apellido: { contains: cleanSearch } },
+        { email: { contains: cleanSearch } },
+        { numero_identificacion: { contains: cleanSearch } },
+        { roles: { nombre: { contains: cleanSearch } } },
+      ];
+    }
+
     const usuarios = await this.prisma.usuarios.findMany({
+      where,
       include: {
         roles: true,
         tipos_identificacion: true,
@@ -76,7 +97,81 @@ export class UsersAdminService {
     };
   }
 
+  async findRoles() {
+    const roles = await this.prisma.roles.findMany({
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    return {
+      success: true,
+      roles: roles.map((role) => ({
+        id: role.id,
+        nombre: role.nombre,
+      })),
+    };
+  }
+
+  async findOne(id: string) {
+    const userId = this.parseUserId(id);
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: userId },
+      include: {
+        roles: true,
+        tipos_identificacion: true,
+      },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    return {
+      success: true,
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        direccion: usuario.direccion,
+        fecha_nacimiento: usuario.fecha_nacimiento,
+        rol: usuario.roles?.nombre ?? null,
+        tipo_identificacion: usuario.tipos_identificacion?.nombre ?? null,
+        numero_identificacion: usuario.numero_identificacion,
+        id_rol: usuario.id_rol,
+        id_tipo_identificacion: usuario.id_tipo_identificacion,
+        email_verified: usuario.email_verified,
+      },
+    };
+  }
+
   async create(dto: CreateUserAdminDto) {
+    const existingEmail = await this.prisma.usuarios.findFirst({
+      where: { email: dto.email },
+      select: { id: true },
+    });
+
+    if (existingEmail) {
+      throw new ConflictException({
+        success: false,
+        message: 'El correo electronico ya esta registrado.',
+      });
+    }
+
+    const existingDoc = await this.prisma.usuarios.findFirst({
+      where: { numero_identificacion: dto.numero_identificacion },
+      select: { id: true },
+    });
+
+    if (existingDoc) {
+      throw new ConflictException({
+        success: false,
+        message: 'El numero de identificacion ya esta registrado.',
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     try {
@@ -116,22 +211,58 @@ export class UsersAdminService {
       throw new NotFoundException({ success: false, message: 'Usuario no encontrado' });
     }
 
+    if (dto.email !== undefined) {
+      const emailConflict = await this.prisma.usuarios.findFirst({
+        where: {
+          email: dto.email,
+          id: { not: userId },
+        },
+        select: { id: true },
+      });
+
+      if (emailConflict) {
+        throw new ConflictException({
+          success: false,
+          message: 'El correo electronico ya esta registrado.',
+        });
+      }
+    }
+
+    if (dto.numero_identificacion !== undefined) {
+      const docConflict = await this.prisma.usuarios.findFirst({
+        where: {
+          numero_identificacion: dto.numero_identificacion,
+          id: { not: userId },
+        },
+        select: { id: true },
+      });
+
+      if (docConflict) {
+        throw new ConflictException({
+          success: false,
+          message: 'El numero de identificacion ya esta registrado.',
+        });
+      }
+    }
+
     const data: Prisma.usuariosUpdateInput = {
-      ...(dto.nombre !== undefined ? { nombre: dto.nombre } : {}),
-      ...(dto.apellido !== undefined ? { apellido: dto.apellido } : {}),
-      ...(dto.email !== undefined ? { email: dto.email } : {}),
-      ...(dto.direccion !== undefined ? { direccion: dto.direccion } : {}),
-      ...(dto.fecha_nacimiento !== undefined ? { fecha_nacimiento: new Date(dto.fecha_nacimiento) } : {}),
+      ...(dto.nombre !== undefined && String(dto.nombre).trim() !== '' ? { nombre: dto.nombre } : {}),
+      ...(dto.apellido !== undefined && String(dto.apellido).trim() !== '' ? { apellido: dto.apellido } : {}),
+      ...(dto.email !== undefined && String(dto.email).trim() !== '' ? { email: dto.email } : {}),
+      ...(dto.direccion !== undefined && String(dto.direccion).trim() !== '' ? { direccion: dto.direccion } : {}),
+      ...(dto.fecha_nacimiento !== undefined && String(dto.fecha_nacimiento).trim() !== ''
+        ? { fecha_nacimiento: new Date(dto.fecha_nacimiento) }
+        : {}),
       ...(dto.id_rol !== undefined ? { id_rol: dto.id_rol } : {}),
       ...(dto.id_tipo_identificacion !== undefined
         ? { id_tipo_identificacion: dto.id_tipo_identificacion }
         : {}),
-      ...(dto.numero_identificacion !== undefined
+      ...(dto.numero_identificacion !== undefined && String(dto.numero_identificacion).trim() !== ''
         ? { numero_identificacion: dto.numero_identificacion }
         : {}),
     };
 
-    if (dto.password !== undefined) {
+    if (dto.password !== undefined && String(dto.password).trim() !== '') {
       data.password = await bcrypt.hash(dto.password, 10);
     }
 

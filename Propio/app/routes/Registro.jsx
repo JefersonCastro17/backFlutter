@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import logo from "../logo.svg";
 
 import "../styles/base.css";
 import "../styles/registro.css";
@@ -111,10 +110,12 @@ function Registro() {
     }
 
     try {
+      const { id_rol, ...payload } = formData;
+
       const data = await httpRequest(API_ENDPOINTS.auth.register, {
         method: "POST",
         data: {
-          ...formData,
+          ...payload,
           id_tipo_identificacion: Number(formData.id_tipo_identificacion)
         }
       });

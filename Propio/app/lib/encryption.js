@@ -28,9 +28,21 @@ export const decryptToken = (encryptedText) => {
     const decrypted = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY).toString(
       CryptoJS.enc.Utf8
     );
-    return decrypted;
+    if (decrypted) {
+      return decrypted;
+    }
+
+    // Si el valor no parece ser un texto cifrado AES, asumir que ya es un token JWT en texto plano.
+    if (typeof encryptedText === 'string' && encryptedText.includes('.')) {
+      return encryptedText;
+    }
+
+    return null;
   } catch (error) {
     console.error('Error al descifrar token:', error);
+    if (typeof encryptedText === 'string' && encryptedText.includes('.')) {
+      return encryptedText;
+    }
     return null;
   }
 };
@@ -58,10 +70,30 @@ export const encryptData = (obj) => {
 export const decryptData = (encryptedJson) => {
   try {
     const decryptedString = decryptToken(encryptedJson);
-    if (!decryptedString) return null;
-    return JSON.parse(decryptedString);
+    if (decryptedString) {
+      return JSON.parse(decryptedString);
+    }
+
+    // Si el valor no está cifrado pero es JSON válido,
+    // devolver el objeto parseado directamente.
+    if (typeof encryptedJson === 'string') {
+      try {
+        return JSON.parse(encryptedJson);
+      } catch {
+        // no es JSON válido en texto plano
+      }
+    }
+
+    return null;
   } catch (error) {
     console.error('Error al descifrar datos:', error);
+    if (typeof encryptedJson === 'string') {
+      try {
+        return JSON.parse(encryptedJson);
+      } catch {
+        // no es JSON válido en texto plano
+      }
+    }
     return null;
   }
 };

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../logo.svg";
 
 import "../styles/base.css";
 import "../styles/registro.css";
@@ -74,10 +73,10 @@ function Recuperar() {
     }
 
     try {
-      // El payload sale del estado controlado (email, code, newPassword).
+      // El payload sale del estado controlado (email, code, newPassword, confirmPassword).
       const data = await httpRequest(API_ENDPOINTS.auth.resetPassword, {
         method: "POST",
-        data: { email, code, newPassword }
+        data: { email, code, newPassword, confirmPassword }
       });
 
       if (!data?.success) {
@@ -104,7 +103,7 @@ function Recuperar() {
       <header>
         <div className="header-container">
           <div className="logo-section">
-            <img src={logo} alt="Logo" className="logo-img" />
+            <img src="/images/placeholder.svg" alt="Logo" className="logo-img" />
             <h1 className="portal-title">Portal 2</h1>
           </div>
 
