@@ -101,85 +101,6 @@ export class ProductsService {
     };
   }
 
-  async findProveedores() {
-    const proveedores = await this.prisma.proveedor.findMany({
-      orderBy: { nombre: 'asc' },
-      select: {
-        id_proveedor: true,
-        nombre: true,
-        apellido: true,
-        telefono: true,
-      },
-    });
-
-    return proveedores.map((proveedor) => ({
-      id: proveedor.id_proveedor,
-      nombre: proveedor.nombre,
-      apellido: proveedor.apellido,
-      telefono: proveedor.telefono,
-    }));
-  }
-
-  async createProveedor(dto: { nombre?: string; apellido?: string; telefono?: string }) {
-    try {
-      const proveedor = await this.prisma.proveedor.create({
-        data: {
-          nombre: dto.nombre?.trim() || null,
-          apellido: dto.apellido?.trim() || null,
-          telefono: dto.telefono?.trim() || null,
-        },
-      });
-
-      return { message: 'Proveedor creado correctamente', id: proveedor.id_proveedor };
-    } catch (error) {
-      this.handlePersistenceError(error, 'No se pudo crear el proveedor');
-    }
-  }
-
-  async updateProveedor(id: number, dto: { nombre?: string; apellido?: string; telefono?: string }) {
-    const existing = await this.prisma.proveedor.findUnique({ where: { id_proveedor: id } });
-
-    if (!existing) {
-      throw new NotFoundException({ message: 'Proveedor no encontrado' });
-    }
-
-    try {
-      await this.prisma.proveedor.update({
-        where: { id_proveedor: id },
-        data: {
-          ...(dto.nombre !== undefined ? { nombre: dto.nombre?.trim() || null } : {}),
-          ...(dto.apellido !== undefined ? { apellido: dto.apellido?.trim() || null } : {}),
-          ...(dto.telefono !== undefined ? { telefono: dto.telefono?.trim() || null } : {}),
-        },
-      });
-    } catch (error) {
-      this.handlePersistenceError(error, 'No se pudo actualizar el proveedor');
-    }
-
-    return { message: 'Proveedor actualizado correctamente' };
-  }
-
-  async removeProveedor(id: number) {
-    const existing = await this.prisma.proveedor.findUnique({ where: { id_proveedor: id } });
-
-    if (!existing) {
-      throw new NotFoundException({ message: 'Proveedor no encontrado' });
-    }
-
-    try {
-      await this.prisma.proveedor.delete({ where: { id_proveedor: id } });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
-        throw new BadRequestException({
-          message: 'No se puede eliminar el proveedor porque tiene productos relacionados.',
-        });
-      }
-      this.handlePersistenceError(error, 'No se pudo eliminar el proveedor');
-    }
-
-    return { message: 'Proveedor eliminado correctamente' };
-  }
-
   async create(dto: CreateProductDto, uploadedImagePath?: string) {
     const normalizedImage = this.normalizeImagePath(uploadedImagePath ?? dto.imagen);
 
@@ -279,7 +200,6 @@ export class ProductsService {
     }
 
     try {
-<<<<<<< HEAD
       await this.prisma.$transaction(async (tx) => {
         await tx.venta_productos.deleteMany({
           where: { id_productos: id },
@@ -304,10 +224,6 @@ export class ProductsService {
         await tx.productos.delete({
           where: { id_productos: id },
         });
-=======
-      await this.prisma.productos.delete({
-        where: { id_productos: id },
->>>>>>> a722e32125026673aba3b45a5ba73860ab5bf866
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
