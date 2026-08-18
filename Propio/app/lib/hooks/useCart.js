@@ -88,13 +88,19 @@ export const useCart = () => {
 
   const setItemQuantity = (productId, newQuantity) => {
     setCart(prevCart => {
-        if (newQuantity <= 0) {
-            // Eliminar producto si la cantidad es 0 o menos
-            return prevCart.filter(item => item.id !== productId);
-        }
-        return prevCart.map(item => 
-            item.id === productId ? { ...item, cantidad: newQuantity } : item
-        );
+      const nextQuantity = Number(newQuantity);
+
+      if (!Number.isFinite(nextQuantity)) {
+        return prevCart;
+      }
+
+      if (nextQuantity <= 0) {
+        return prevCart.filter(item => item.id !== productId);
+      }
+
+      return prevCart.map(item =>
+        item.id === productId ? { ...item, cantidad: nextQuantity } : item
+      );
     });
   };
 

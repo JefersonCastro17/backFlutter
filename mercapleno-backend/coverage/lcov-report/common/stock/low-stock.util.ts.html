@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">90% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>9/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">85.71% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>6/7</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -98,7 +98,7 @@
 <a name='L33'></a><a href='#L33'>33</a>
 <a name='L34'></a><a href='#L34'>34</a>
 <a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L36'></a><a href='#L36'>36</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -109,23 +109,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -133,7 +133,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { envs } from '../../config';</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { envs } from '../../config';
 &nbsp;
 export interface LowStockAlert {
   productId: number;
@@ -144,23 +144,23 @@ export interface LowStockAlert {
 }
 &nbsp;
 // Keep threshold logic in one place so inventory and sales stay aligned.
-export const <span class="cstat-no" title="statement not covered" >getLowStockMetadata = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>s</span>tock: number) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
+export const getLowStockMetadata = (stock: number) =&gt; ({
   isLowStock: stock &lt;= envs.lowStockThreshold,
   lowStockThreshold: envs.lowStockThreshold,
 });
 &nbsp;
-export const <span class="cstat-no" title="statement not covered" >buildLowStockAlert = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span></span></span>
+export const buildLowStockAlert = (
   productId: number,
   remainingStock: number,
   productName?: string,
 ): LowStockAlert | null =&gt; {
-<span class="cstat-no" title="statement not covered" >  if (remainingStock &gt; envs.lowStockThreshold) {</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (remainingStock &gt; envs.lowStockThreshold) {
 <span class="cstat-no" title="statement not covered" >    return null;</span>
   }
 &nbsp;
-  const label = <span class="cstat-no" title="statement not covered" >productName?.trim() ? `${productName} (ID ${productId})` : `producto ID ${productId}`;</span>
+  const label = productName?.trim() ? `${productName} (ID ${productId})` : <span class="branch-1 cbranch-no" title="branch not covered" >`producto ID ${productId}`;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return {</span>
+  return {
     productId,
     productName,
     remainingStock,
@@ -175,7 +175,7 @@ export const <span class="cstat-no" title="statement not covered" >buildLowStock
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-16T01:02:43.579Z
+                at 2026-08-18T03:10:22.853Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

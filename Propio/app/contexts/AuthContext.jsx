@@ -75,17 +75,21 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         // Limpiar el estado React
         setAuthState({ user: null, token: null });
-        
+
         // Limpiar localStorage inmediatamente
         localStorage.removeItem('user');
-        // Limpia el carrito local del cliente al cerrar sesion (clave usada en Cart hook)
+        localStorage.removeItem('token');
+
+        // Limpia el carrito local del cliente al cerrar sesión.
         try {
             localStorage.removeItem('productosCarrito');
             localStorage.removeItem('lastPurchasedCart');
+            localStorage.removeItem('cart');
         } catch (e) {
             console.warn('No se pudo limpiar el carrito de localStorage:', e);
         }
-        // Notificar a cualquier listener (p.ej. hook de carrito) para que sincronice estado en memoria
+
+        // Notificar a cualquier listener para que sincronice el estado en memoria.
         try {
             window.dispatchEvent(new CustomEvent('mercapleno:clearCart'));
             window.dispatchEvent(new CustomEvent('mercapleno:logout'));
