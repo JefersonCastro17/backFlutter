@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
-import { AppModule } from '../app.module';
-import { MysqlService } from '../common/database/mysql.service';
+import { AppModule } from '../../../src/app.module';
+import { MysqlService } from '../../../src/common/database/mysql.service';
 
 const request = require('supertest');
 

@@ -1,7 +1,3 @@
--- =======================================================
--- ESQUEMA SQLITE PARA PRUEBAS DE INTEGRACIÓN (MERCAPLENO)
--- Ubicación: tester/integracion/db/schema.sql
--- =======================================================
 
 PRAGMA foreign_keys = ON;
 

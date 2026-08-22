@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductsService } from './products.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { ProductsService } from '../../../src/products/products.service';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto } from '../../../src/products/dto/create-product.dto';
 
 describe('ProductsService', () => {
   let service: ProductsService;

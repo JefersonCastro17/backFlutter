@@ -18,7 +18,6 @@ import { any } from 'joi';
 
 describe('AuthService (Unitarias)', () => {
 
-  // Estas variables guardan las instancias reales del servicio bajo prueba y de sus dependencias simuladas.
   let authService: AuthService;
   let prismaService: PrismaService;
   let emailService: EmailService;
@@ -26,7 +25,6 @@ describe('AuthService (Unitarias)', () => {
 
 
   // beforeEach() se ejecuta ANTES de CADA prueba (it).
-  // Aquí se monta un módulo de testing con mocks de Prisma, JWT y Email para aislar el comportamiento del servicio.
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -88,7 +86,6 @@ describe('AuthService (Unitarias)', () => {
 
 
   // RF-001.1: Registrar usuario
-  // Este bloque prueba el flujo de alta de usuarios y las reglas de negocio asociadas: duplicados, validaciones y seguridad.
   describe('RF-001.1 Registrar usuario', () => {
 
     const registerDto = {
@@ -111,7 +108,6 @@ describe('AuthService (Unitarias)', () => {
       jest.spyOn(prismaService.usuarios, 'create').mockResolvedValue({ id: 1 } as any);
       jest.spyOn(emailService, 'sendVerificationCode').mockResolvedValue(undefined as any);
 
-      // Se ejecuta el servicio real con datos simulados para comprobar el resultado esperado.
       const result = await authService.register(registerDto);
 
       expect(prismaService.usuarios.create).toHaveBeenCalled();

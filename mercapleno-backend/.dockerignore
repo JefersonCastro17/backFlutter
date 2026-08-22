@@ -7,9 +7,6 @@ dist
 npm-debug.log
 tsconfig*.tsbuildinfo
 .tmp-local-backend*.log
-tester/
-reports/
 postman/
-coverage/
 *.md
 *.txt

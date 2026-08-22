@@ -1,7 +1,3 @@
--- =======================================================
--- DATOS INICIALES (SEED) SQLITE PARA PRUEBAS DE INTEGRACIÓN
--- Ubicación: tester/integracion/db/seed.sql
--- =======================================================
 
 -- 1. Roles
 INSERT OR REPLACE INTO roles (id, nombre) VALUES
